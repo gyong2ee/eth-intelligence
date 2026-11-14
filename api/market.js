@@ -1,5 +1,5 @@
 const sources = {
- price: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd&include_24hr_change=true',
+ price: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd,krw,eur,jpy&include_24hr_change=true',
  fear: 'https://api.alternative.me/fng/?limit=365',
  tvl: 'https://api.llama.fi/v2/historicalChainTvl/Ethereum',
  mvrv: 'https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=CapMVRVCur&frequency=1d&page_size=10000',
