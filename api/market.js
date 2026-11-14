@@ -1,4 +1,5 @@
 const sources = {
+ upbit: 'https://api.upbit.com/v1/ticker?markets=KRW-ETH',
  price: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd,krw,eur,jpy&include_24hr_change=true',
  fear: 'https://api.alternative.me/fng/?limit=365',
  tvl: 'https://api.llama.fi/v2/historicalChainTvl/Ethereum',
