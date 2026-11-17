@@ -8,8 +8,8 @@ module.exports=async(req,res)=>{let id=ids[req.query.series];if(['dxy','gold'].i
    const response=await fetch(u,{signal:AbortSignal.timeout(18000)});
    if(!response.ok)throw Error('Treasury HTTP '+response.status);
    const xml=await response.text(),out=[];
-   for(const match of xml.matchAll(/<entry\\b[^>]*>([\\s\\S]*?)<\\/entry>/g)){
-    const v=match[1],date=v.match(/<d:NEW_DATE[^>]*>(\\d{4}-\\d{2}-\\d{2})/),two=v.match(/<d:BC_2YEAR(?:\\s[^>]*)?>([0-9.]+)<\\/d:BC_2YEAR>/),ten=v.match(/<d:BC_10YEAR(?:\\s[^>]*)?>([0-9.]+)<\\/d:BC_10YEAR>/);
+   for(const match of xml.matchAll(/<entry\b[^>]*>([\s\S]*?)<\/entry>/g)){
+    const v=match[1],date=v.match(/<d:NEW_DATE[^>]*>(\d{4}-\d{2}-\d{2})/),two=v.match(/<d:BC_2YEAR(?:\s[^>]*)?>([0-9.]+)<\/d:BC_2YEAR>/),ten=v.match(/<d:BC_10YEAR(?:\s[^>]*)?>([0-9.]+)<\/d:BC_10YEAR>/);
     if(date&&two&&ten)out.push({date:date[1],value:Number((Number(ten[1])-Number(two[1])).toFixed(4))});
    }
    return out;
@@ -18,7 +18,7 @@ module.exports=async(req,res)=>{let id=ids[req.query.series];if(['dxy','gold'].i
   // Prefer full FRED series; fall back to Treasury when FRED is unavailable.
   try{
    const fr=await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=T10Y2Y&cosd=1976-06-01',{signal:AbortSignal.timeout(14000)});
-   if(fr.ok){const csv=await fr.text();const rows=csv.trim().split(/\\r?\\n/).slice(1).map(l=>l.split(',')).filter(a=>/^\\d{4}-\\d{2}-\\d{2}$/.test(a[0])&&a[1]!==''&&Number.isFinite(Number(a[1]))).map(a=>({date:a[0],value:Number(a[1])}));if(rows.length>fallback.length){res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');return res.json({id,source:'FRED',rows})}}
+   if(fr.ok){const csv=await fr.text();const rows=csv.trim().split(/\r?\n/).slice(1).map(l=>l.split(',')).filter(a=>/^\d{4}-\d{2}-\d{2}$/.test(a[0])&&a[1]!==''&&Number.isFinite(Number(a[1]))).map(a=>({date:a[0],value:Number(a[1])}));if(rows.length>fallback.length){res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');return res.json({id,source:'FRED',rows})}}
   }catch(e){}
   if(fallback.length){res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');return res.json({id,source:'US Treasury',rows:fallback,notice:'Fallback: 22 years maximum'})}
   throw Error('FRED and Treasury yield spread unavailable');
