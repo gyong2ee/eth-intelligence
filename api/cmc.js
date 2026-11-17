@@ -11,7 +11,7 @@ module.exports=async function(req,res){
  Object.entries({crypto_id:'1027',category:'perpetual',convert:'USD',start,limit:250}).forEach(([k,v])=>u.searchParams.set(k,v));
  const r=await fetch(u,{headers:{'X-CMC_PRO_API_KEY':key,Accept:'application/json'},signal:AbortSignal.timeout(12000)});
  const j=await r.json().catch(()=>({}));
- if(!r.ok||j.status?.error_code)throw Error('CMC HTTP '+r.status+': '+(j.status?.error_message||'API rejected'));
+ if(!r.ok||Number(j.status?.error_code||0)!==0)throw Error('CMC HTTP '+r.status+'; code='+String(j.status?.error_code??'missing')+'; message='+String(j.status?.error_message||'none')+'; notice='+String(j.status?.notice||'none'));
  const part=j.data?.market_pairs||[];rows.push(...part);if(part.length<250)break;start+=250;
  }
  const pairs=rows.filter(p=>p.category==='perpetual'&&!p.outlier_detected);
