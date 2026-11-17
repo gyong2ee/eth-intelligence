@@ -25,6 +25,23 @@ module.exports=async(req,res)=>{let id=ids[req.query.series];if(['dxy','gold','w
  }
  if(req.query.series==='m2'){
   const errors=[];
+  try{
+    const rr=await fetch('https://m0.com/data/m2',{headers:{Accept:'text/csv'},signal:AbortSignal.timeout(9000)});
+    if(!rr.ok)throw Error('HTTP '+rr.status);
+    const csv=await rr.text();
+    const rows=csv.split(/\r?\n/).flatMap(line=>{
+      const cells=line.replace(/"/g,'').split(',');
+      const date=cells.find(v=>/^\d{4}-\d{2}(?:-\d{2})?$/.test(v.trim()));
+      if(!date)return [];
+      const idx=cells.indexOf(date);
+      const v=Number((cells[idx+1]||'').trim());
+      return Number.isFinite(v)&&v>0?[{date:date.length===7?date+'-01':date,value:v}]:[];
+    }).sort((a,b)=>a.date.localeCompare(b.date));
+    if(rows.length<24)throw Error('Too few observations: '+rows.length);
+    res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');
+    return res.json({id,source:'m0.com / FRED M2SL mirror (USD billions)',rows});
+  }catch(e){errors.push('m0.com: '+e.message)}
+
   const dbUrls=['https://api.db.nomics.world/v22/series/FRED/M2SL?observations=1','https://api.db.nomics.world/v22/series/FRED/M2SL?observations=1&limit=1000'];
   for(const url of dbUrls.slice(0,1)){
     try{
