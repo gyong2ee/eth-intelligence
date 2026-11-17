@@ -23,4 +23,35 @@ module.exports=async(req,res)=>{let id=ids[req.query.series];if(['dxy','gold','w
   if(fallback.length){res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');return res.json({id,source:'US Treasury',rows:fallback,notice:'Fallback: 22 years maximum'})}
   throw Error('FRED and Treasury yield spread unavailable');
  }
- if(req.query.series==='m2'){try{const u='https://api.db.nomics.world/v22/series/FRED/M2SL?observations=1';const rr=await fetch(u,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});if(!rr.ok)throw Error('DBnomics HTTP '+rr.status);const jj=await rr.json(),series=jj?.series?.docs?.[0],periods=series?.period||[],values=series?.value||[];const rows=periods.flatMap((p,i)=>{let v=Number(values[i]);return /^\d{4}-\d{2}$/.test(p)&&Number.isFinite(v)?[{date:p+'-01',value:v}]:[]});if(!rows.length)throw Error('No DBnomics M2 observations');res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');return res.json({id,source:'DBnomics (FRED M2SL mirror)',rows})}catch(e){/* fall through to FRED CSV */}}let r=await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id='+id+'&cosd='+(req.query.series==='spread'?'1976-06-01':'2000-01-01'),{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('FRED HTTP '+r.status);let csv=await r.text(),rows=csv.trim().split(/\r?\n/).slice(1).map(l=>l.split(',')).filter(a=>/^\d{4}-\d{2}-\d{2}$/.test(a[0])&&a[1]!==''&&Number.isFinite(Number(a[1]))).map(a=>({date:a[0],value:Number(a[1])}));if(!rows.length)throw Error('No valid observations');res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');res.json({id,rows});}catch(e){res.status(502).json({error:e.message,id});}};
+ if(req.query.series==='m2'){
+  const errors=[];
+  const dbUrls=['https://api.db.nomics.world/v22/series/FRED/M2SL?observations=1','https://api.db.nomics.world/v22/series/FRED/M2SL?observations=1&limit=1000'];
+  for(const url of dbUrls.slice(0,1)){
+    try{
+      const rr=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(9000)});
+      if(!rr.ok)throw Error('HTTP '+rr.status);
+      const jj=await rr.json(),series=jj?.series?.docs?.[0],periods=series?.period||[],values=series?.value||[];
+      const rows=periods.flatMap((p,i)=>{const v=Number(values[i]);return /^\d{4}-\d{2}$/.test(p)&&Number.isFinite(v)?[{date:p+'-01',value:v}]:[]});
+      if(!rows.length)throw Error('No valid observations');
+      res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');
+      return res.json({id,source:'DBnomics / FRED M2SL',rows});
+    }catch(e){errors.push('DBnomics: '+e.message)}
+  }
+  for(const url of [
+    'https://fred.stlouisfed.org/graph/fredgraph.csv?id=M2SL',
+    'https://fred.stlouisfed.org/graph/fredgraph.csv?cosd=2000-01-01&id=M2SL',
+    'https://fred.stlouisfed.org/graph/fredgraph.csv?id=M2SL&cosd=2000-01-01'
+  ].slice(0,1)){
+    try{
+      const rr=await fetch(url,{signal:AbortSignal.timeout(9000),headers:{'User-Agent':'Mozilla/5.0','Accept':'text/csv'}});
+      if(!rr.ok)throw Error('HTTP '+rr.status);
+      const csv=await rr.text();
+      const rows=csv.trim().split(/\r?\n/).slice(1).map(line=>line.split(',')).filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p[0])&&p[1]!==''&&Number.isFinite(Number(p[1]))).map(p=>({date:p[0],value:Number(p[1])}));
+      if(!rows.length)throw Error('No valid observations');
+      res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');
+      return res.json({id,source:'FRED CSV',rows});
+    }catch(e){errors.push('FRED: '+e.message)}
+  }
+  return res.status(502).json({id,error:'M2 upstream unavailable',details:errors});
+}
+let r=await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id='+id+'&cosd='+(req.query.series==='spread'?'1976-06-01':'2000-01-01'),{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('FRED HTTP '+r.status);let csv=await r.text(),rows=csv.trim().split(/\r?\n/).slice(1).map(l=>l.split(',')).filter(a=>/^\d{4}-\d{2}-\d{2}$/.test(a[0])&&a[1]!==''&&Number.isFinite(Number(a[1]))).map(a=>({date:a[0],value:Number(a[1])}));if(!rows.length)throw Error('No valid observations');res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');res.json({id,rows});}catch(e){res.status(502).json({error:e.message,id});}};
