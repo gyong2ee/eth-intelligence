@@ -121,18 +121,23 @@
  .market-signals>section{margin:14px 0}
 }
 </style><style>
-/* Fix only the desktop BTC Advanced Chart's actual rendered iframe height. */
+/* BTC chart only: size the widget container, never forcibly resize its generated iframe. */
 @media(min-width:1100px){
- .topcharts>div>section:first-child .tradingview-widget-container,
- .topcharts>div>section:first-child .tradingview-widget-container__widget,
- .topcharts>div>section:first-child .tradingview-widget-container iframe{
+ .topcharts>div>section:first-child .tradingview-widget-container{
   height:520px!important;
   min-height:520px!important;
-  max-height:none!important;
+  width:100%!important;
+  overflow:visible;
+ }
+ .topcharts>div>section:first-child .tradingview-widget-container__widget{
+  height:100%!important;
+  width:100%!important;
  }
  .topcharts>div>section:first-child .tradingview-widget-container iframe{
-  display:block!important;
+  height:100%!important;
+  min-height:0!important;
   width:100%!important;
+  max-width:100%!important;
  }
 }
 </style><aside id="desktopSidebar" aria-label="데스크톱 지표 메뉴">
