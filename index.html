@@ -187,6 +187,18 @@
  .dominance-extras>section .value{font-size:clamp(19px,2vw,28px)!important;margin:8px 0!important}
 }
 @media(max-width:1099px){.dominance-extras{display:none}}
+</style><style>
+/* Desktop only: six metrics in the right panel; no cards below dominance. */
+@media(min-width:1100px){
+ .dominance-extras{display:none!important}
+ .market-signals{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:280px 105px 105px!important;height:auto!important;align-self:start!important}
+ .market-signals>section[data-metric]{height:105px!important;min-height:0!important;margin:0!important;padding:12px 14px!important;display:flex;flex-direction:column;justify-content:center}
+ .market-signals>section[data-metric="tvl"]{grid-column:1;grid-row:2}
+ .market-signals>section[data-metric="oi"]{grid-column:2;grid-row:2}
+ .market-signals>section[data-metric="funding"]{grid-column:1;grid-row:3}
+ .market-signals>section[data-metric="kimchi"]{grid-column:2;grid-row:3}
+ .market-signals>section[data-metric] .value{font-size:clamp(17px,1.7vw,26px)!important;overflow-wrap:anywhere}
+}
 </style><aside id="desktopSidebar" aria-label="데스크톱 지표 메뉴">
  <div class="side-brand" style="display:flex;align-items:center;gap:9px"><svg width="20" height="29" viewBox="0 0 24 36" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L1 18l11-5.2L23 18 12 1Z" fill="#a5a9b8"/><path d="M1 20.5 12 35l11-14.5-11 6.3L1 20.5Z" fill="#a5a9b8"/><path d="M1 18 12 12.8V25L1 18Z" fill="#d5d8e2"/><path d="M23 18 12 12.8V25l11-7Z" fill="#7d8295"/></svg><span style="color:#e6eaf4">ETH Intelligence</span></div>
  <div class="side-group">Overview</div>
@@ -236,7 +248,7 @@
   const desktop=window.matchMedia('(min-width:1100px)').matches;
   ['tvl','oi','funding','kimchi'].forEach(metric=>{
    const card=document.querySelector('#derivativeCards > section[data-metric="'+metric+'"],.market-signals > section[data-metric="'+metric+'"],.dominance-extras > section[data-metric="'+metric+'"]');
-   const destination=desktop?(metric==='funding'||metric==='kimchi'?document.querySelector('.dominance-extras'):signal):derivatives;
+   const destination=desktop?signal:derivatives;
    if(card&&destination&&card.parentElement!==destination)destination.appendChild(card);
   });
  }
