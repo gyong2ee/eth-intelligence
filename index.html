@@ -267,7 +267,42 @@
 .historical-charts canvas:not(.eth-mini-nav canvas),.macrogrid canvas:not(.eth-mini-nav canvas){max-width:100%!important}
 @media(min-width:1100px){.historical-charts>#mvDetail{grid-column:1!important;grid-row:1!important}.historical-charts>#fearHistory{grid-column:2!important;grid-row:1!important}}
 </style><script>
-window.ETHPan=(id,bounds,range,update)=>{const el=document.getElementById(id);if(!el||el.dataset.ethPan)return;el.dataset.ethPan='1';el.style.cursor='grab';el.style.touchAction='pan-y';let drag=null,raf=0,next=null;el.addEventListener('pointerdown',e=>{if(e.button!==0)return;const full=bounds(),v=range();if(!full||!v||v.b<=v.a)return;drag={x:e.clientX,a:v.a,b:v.b,min:full.a,max:full.b,width:Math.max(1,el.getBoundingClientRect().width)};el.style.cursor='grabbing';el.setPointerCapture(e.pointerId)});el.addEventListener('pointermove',e=>{if(!drag)return;const d=drag,span=d.b-d.a;if(span>=d.max-d.min)return;const shift=-(e.clientX-d.x)/d.width*span,a=Math.max(d.min,Math.min(d.max-span,d.a+shift));next={a,b:a+span};if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(next){const v=next;next=null;update(v.a,v.b)}})});const stop=()=>{drag=null;el.style.cursor='grab';if(raf)cancelAnimationFrame(raf);raf=0;next=null};el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('lostpointercapture',stop)};
+window.ETHPan=(id,bounds,range,update)=>{
+ const el=document.getElementById(id);if(!el||el.dataset.ethPan)return;
+ el.dataset.ethPan='1';el.style.cursor='grab';el.style.touchAction='pan-y';
+ let drag=null,raf=0,next=null;
+ const move=e=>{
+  if(!drag||e.pointerId!==drag.pointerId)return;
+  const d=drag,span=d.b-d.a,full=d.max-d.min;
+  if(span>=full-1)return;
+  const shift=-(e.clientX-d.x)/d.width*span;
+  const a=Math.max(d.min,Math.min(d.max-span,d.a+shift));
+  next={a,b:a+span};
+  if(!raf)raf=requestAnimationFrame(()=>{raf=0;if(next){const v=next;next=null;update(v.a,v.b)}});
+ };
+ const stop=e=>{
+  if(!drag||e.pointerId!==drag.pointerId)return;
+  if(next){const v=next;next=null;update(v.a,v.b)}
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  drag=null;el.style.cursor='grab';
+  window.removeEventListener('pointermove',move,true);
+  window.removeEventListener('pointerup',stop,true);
+  window.removeEventListener('pointercancel',stop,true);
+ };
+ el.addEventListener('pointerdown',e=>{
+  if(e.button!==0||drag)return;
+  const full=bounds(),v=range();
+  if(!full||!v||v.b<=v.a||full.b<=full.a)return;
+  const span=v.b-v.a,all=full.b-full.a;
+  if(span>=all-1){el.title='전체 기간입니다. 휠로 확대하면 좌우 드래그할 수 있습니다.';return}
+  e.preventDefault();
+  drag={pointerId:e.pointerId,x:e.clientX,a:v.a,b:v.b,min:full.a,max:full.b,width:Math.max(1,el.getBoundingClientRect().width)};
+  el.style.cursor='grabbing';
+  window.addEventListener('pointermove',move,true);
+  window.addEventListener('pointerup',stop,true);
+  window.addEventListener('pointercancel',stop,true);
+ },true);
+};
 </script><script>
 window.ETHMiniNav=(()=>{const states=new Map();
 function attach(id,points,onSelect,getRange){const el=document.getElementById(id);if(!el||points.length<2)return;points=points.filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.v)).sort((a,b)=>a.t-b.t);if(points.length<2)return;
