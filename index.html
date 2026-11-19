@@ -152,6 +152,24 @@
  .market-signals>section[data-metric="tvl"]{grid-column:1;grid-row:2}
  .market-signals>section[data-metric="oi"]{grid-column:2;grid-row:2}
 }
+</style><style>
+/* Desktop market lower row: compact dominance and balanced metrics, no price-chart changes. */
+@media(min-width:1100px){
+ .market-lower{align-items:start!important}
+ .dominance-panel{display:block!important;align-self:start!important}
+ .dominance-panel>section{flex:none!important;height:auto!important;margin:0!important;padding-bottom:14px!important}
+ .dominance-panel .tradingview-widget-container{height:390px!important}
+ .market-signals{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:280px 120px!important;gap:14px!important;align-self:start!important}
+ .market-signals>section{flex:none!important;min-width:0!important;min-height:0!important;overflow:hidden;box-sizing:border-box}
+ .market-signals>section:first-child{grid-column:1;grid-row:1;padding:15px!important}
+ .market-signals>section:first-child svg{max-height:130px!important}
+ .market-signals>section:nth-child(2){grid-column:2;grid-row:1;padding:15px!important}
+ .market-signals>section:nth-child(2) small{font-size:clamp(9px,.78vw,12px)!important;white-space:nowrap!important;letter-spacing:-.35px}
+ .market-signals>section[data-metric="tvl"],.market-signals>section[data-metric="oi"]{height:120px!important;padding:14px!important;justify-content:center!important}
+ .market-signals>section[data-metric="tvl"]{grid-column:1;grid-row:2}
+ .market-signals>section[data-metric="oi"]{grid-column:2;grid-row:2}
+ .market-signals>section[data-metric] .value{font-size:clamp(18px,1.8vw,27px)!important;margin:8px 0!important}
+}
 </style><aside id="desktopSidebar" aria-label="데스크톱 지표 메뉴">
  <div class="side-brand" style="display:flex;align-items:center;gap:9px"><svg width="20" height="29" viewBox="0 0 24 36" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L1 18l11-5.2L23 18 12 1Z" fill="#a5a9b8"/><path d="M1 20.5 12 35l11-14.5-11 6.3L1 20.5Z" fill="#a5a9b8"/><path d="M1 18 12 12.8V25L1 18Z" fill="#d5d8e2"/><path d="M23 18 12 12.8V25l11-7Z" fill="#7d8295"/></svg><span style="color:#e6eaf4">ETH Intelligence</span></div>
  <div class="side-group">Overview</div>
