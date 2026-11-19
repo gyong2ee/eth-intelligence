@@ -120,6 +120,21 @@
  .dominance-panel>section{margin:6px 0}
  .market-signals>section{margin:14px 0}
 }
+</style><style>
+/* Fix only the desktop BTC Advanced Chart's actual rendered iframe height. */
+@media(min-width:1100px){
+ .topcharts>div>section:first-child .tradingview-widget-container,
+ .topcharts>div>section:first-child .tradingview-widget-container__widget,
+ .topcharts>div>section:first-child .tradingview-widget-container iframe{
+  height:520px!important;
+  min-height:520px!important;
+  max-height:none!important;
+ }
+ .topcharts>div>section:first-child .tradingview-widget-container iframe{
+  display:block!important;
+  width:100%!important;
+ }
+}
 </style><aside id="desktopSidebar" aria-label="데스크톱 지표 메뉴">
  <div class="side-brand" style="display:flex;align-items:center;gap:9px"><svg width="20" height="29" viewBox="0 0 24 36" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L1 18l11-5.2L23 18 12 1Z" fill="#a5a9b8"/><path d="M1 20.5 12 35l11-14.5-11 6.3L1 20.5Z" fill="#a5a9b8"/><path d="M1 18 12 12.8V25L1 18Z" fill="#d5d8e2"/><path d="M23 18 12 12.8V25l11-7Z" fill="#7d8295"/></svg><span style="color:#e6eaf4">ETH Intelligence</span></div>
  <div class="side-group">Overview</div>
