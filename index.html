@@ -140,6 +140,18 @@
   max-width:100%!important;
  }
 }
+</style><style>
+/* Desktop-only 2x2 metric panel alongside ETH dominance. */
+@media(min-width:1100px){
+ .market-signals{display:grid!important;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);grid-template-rows:1fr 1fr;gap:14px;align-items:stretch}
+ .market-signals>section{margin:0!important;min-width:0;min-height:0;box-sizing:border-box}
+ .market-signals>section:first-child{display:flex;flex-direction:column;justify-content:center}
+ .market-signals>section:first-child svg{max-height:130px!important}
+ .market-signals>section:last-child{display:flex;flex-direction:column;justify-content:center}
+ .market-signals>section[data-metric="tvl"],.market-signals>section[data-metric="oi"]{display:flex;flex-direction:column;justify-content:center;padding:16px}
+ .market-signals>section[data-metric="tvl"]{grid-column:1;grid-row:2}
+ .market-signals>section[data-metric="oi"]{grid-column:2;grid-row:2}
+}
 </style><aside id="desktopSidebar" aria-label="데스크톱 지표 메뉴">
  <div class="side-brand" style="display:flex;align-items:center;gap:9px"><svg width="20" height="29" viewBox="0 0 24 36" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L1 18l11-5.2L23 18 12 1Z" fill="#a5a9b8"/><path d="M1 20.5 12 35l11-14.5-11 6.3L1 20.5Z" fill="#a5a9b8"/><path d="M1 18 12 12.8V25L1 18Z" fill="#d5d8e2"/><path d="M23 18 12 12.8V25l11-7Z" fill="#7d8295"/></svg><span style="color:#e6eaf4">ETH Intelligence</span></div>
  <div class="side-group">Overview</div>
@@ -179,5 +191,22 @@
   history.replaceState(null,'','#'+id);
   requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
  }));
+})();
+</script><script>
+/* Move existing metric nodes, not copies: live data and local feature settings stay intact. */
+(function(){
+ const signal=document.querySelector('.market-signals'),derivatives=document.getElementById('derivativeCards');
+ if(!signal||!derivatives)return;
+ function placeMetrics(){
+  const desktop=window.matchMedia('(min-width:1100px)').matches;
+  ['tvl','oi'].forEach(metric=>{
+   const card=document.querySelector('#derivativeCards > section[data-metric="'+metric+'"],.market-signals > section[data-metric="'+metric+'"]');
+   if(card)(desktop?signal:derivatives).appendChild(card);
+  });
+ }
+ const observer=new MutationObserver(()=>placeMetrics());
+ observer.observe(derivatives,{childList:true});
+ window.addEventListener('resize',placeMetrics);
+ placeMetrics();
 })();
 </script></html>
