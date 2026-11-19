@@ -1,7 +1,7 @@
 const sources = {
  upbit: 'https://api.upbit.com/v1/ticker?markets=KRW-ETH',
  price: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin&vs_currencies=usd,krw,eur,jpy&include_24hr_change=true',
- fear: 'https://api.alternative.me/fng/?limit=365',
+ fear: 'https://api.alternative.me/fng/?limit=0',
  tvl: 'https://api.llama.fi/v2/historicalChainTvl/Ethereum',
  mvrv: 'https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=eth&metrics=CapMVRVCur&frequency=1d&page_size=10000',
  funding: 'https://fapi.binance.com/fapi/v1/premiumIndex?symbol=ETHUSDT',
