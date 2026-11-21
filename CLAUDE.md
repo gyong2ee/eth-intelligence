@@ -35,6 +35,8 @@ regions, so keep that setting.
   fear & greed and MVRV share a row; the four staking APR cards share a row; 2Y and 10Y share a
   row with the overlay chart full width below; the back-to-top button is smaller and shows after
   scrolling; the top tabs use position:fixed (sticky fails in iOS Safari / in-app browsers).
+- On phones the liquidity page's eight indicator cards are 2 across × 4 rows (rule in
+  `liquidity.html`, which does not load `theme.css`).
 
 ## Navigation
 
