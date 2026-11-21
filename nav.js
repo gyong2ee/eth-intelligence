@@ -44,6 +44,8 @@
   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
   b.addEventListener('click',function(){window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
   document.body.appendChild(b);
+  // .show is only used by the phone stylesheet; desktop keeps the button always visible
+  var tick=function(){b.classList.toggle('show',window.scrollY>600)};window.addEventListener('scroll',tick,{passive:true});tick();
  }
  function init(){tabs();side();toTop()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
