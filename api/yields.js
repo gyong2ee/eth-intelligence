@@ -17,7 +17,7 @@ async function okx(coin){
  const est=Number(d.estRate),avg=Number(d.avgRate);
  const v=Number.isFinite(est)&&est>0?est:avg;if(!Number.isFinite(v))throw Error('no rate');
  const amt=Number(d.avgAmtUsd);
- return {venue:'OKX',product:'Simple Earn 유연',coin,apy:+(v*100).toFixed(2),amountUsd:Number.isFinite(amt)&&amt>0?Math.round(amt):null,note:'예상 대출 이율 · 대출 잔액 기준'};
+ return {venue:'OKX',product:'Simple Earn 유연',coin,apy:+(v*100).toFixed(2),amountUsd:Number.isFinite(amt)&&amt>0?Math.round(amt):null,note:'예상 연이율 · 예치량은 OKX가 공개하지 않음'};
 }
 // Bybit Earn: flexible savings product list (public).
 async function bybit(coin){
