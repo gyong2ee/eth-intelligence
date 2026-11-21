@@ -25,6 +25,15 @@ module.exports=async(req,res)=>{let id=ids[req.query.series];if(['dxy','gold','w
  }
  if(req.query.series==='m2'){
   const errors=[];
+  // FRED M2SL directly first (USD billions, monthly)
+  try{
+    const fr=await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=M2SL',{signal:AbortSignal.timeout(12000)});
+    if(!fr.ok)throw Error('HTTP '+fr.status);
+    const rows=(await fr.text()).trim().split(/\r?\n/).slice(1).map(l=>l.split(',')).filter(a=>/^\d{4}-\d{2}-\d{2}$/.test(a[0])&&a[1]!==''&&a[1]!=='.'&&Number.isFinite(Number(a[1]))).map(a=>({date:a[0],value:Number(a[1])}));
+    if(rows.length<24)throw Error('Too few observations: '+rows.length);
+    res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=86400');
+    return res.json({id,source:'FRED M2SL (USD billions)',rows});
+  }catch(e){errors.push('FRED: '+e.message)}
   try{
     const rr=await fetch('https://m0.com/data/m2',{headers:{Accept:'text/csv'},signal:AbortSignal.timeout(9000)});
     if(!rr.ok)throw Error('HTTP '+rr.status);
