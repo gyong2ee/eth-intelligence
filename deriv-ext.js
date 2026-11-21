@@ -198,7 +198,7 @@
   nav.addEventListener('pointerup',end);nav.addEventListener('pointercancel',end);
   nav.addEventListener('wheel',function(e){if(!navGeo)return;e.preventDefault();var r=nav.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*navGeo.W;zoomAt(Math.max(0,Math.min(1,(x-navGeo.a)/Math.max(1,navGeo.b-navGeo.a))),wd(e))},{passive:false});
   main.addEventListener('wheel',function(e){e.preventDefault();var r=main.getBoundingClientRect();zoomAt(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),wd(e))},{passive:false});
-  main.addEventListener('pointerdown',function(e){if(e.button!==0||e.pointerType==='touch'||st.b-st.a>=T1-T0-1)return;drag={mode:'pan',x:e.clientX,a:st.a,b:st.b,w:main.getBoundingClientRect().width,el:main};main.setPointerCapture(e.pointerId);main.classList.add('dragging')});
+  main.addEventListener('pointerdown',function(e){if(e.button!==0||e.pointerType==='touch')return;e.preventDefault();if(st.b-st.a>=T1-T0-1)return;drag={mode:'pan',x:e.clientX,a:st.a,b:st.b,w:main.getBoundingClientRect().width,el:main};main.setPointerCapture(e.pointerId);main.classList.add('dragging')});
   main.addEventListener('pointermove',function(e){if(!drag||drag.el!==main)return;var dt=-(e.clientX-drag.x)/drag.w*(drag.b-drag.a);clamp(drag.a+dt,drag.b+dt);manual();draw()});
   main.addEventListener('pointerup',end);main.addEventListener('pointercancel',end);
   draw();
@@ -336,6 +336,8 @@
  }
 
  function start(){
+  // dragging on any chart should never start a text selection (axis labels or the notes below)
+  document.addEventListener('mousedown',function(e){if(e.button===0&&e.target.closest&&e.target.closest('.chart-wrap svg'))e.preventDefault()});
   if(!document.getElementById('oiLongChart'))return;
   seg('oiLongSym',function(v){oiState.sym=v;drawOI()});
   seg('oiLongRange',function(v){oiState.days=+v;drawOI()});
