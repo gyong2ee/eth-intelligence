@@ -128,6 +128,17 @@ button{border-radius:999px}
 .colophon{border-top:1px solid var(--rule);grid-template-columns:1fr}
 .code{color:var(--soft)}
 
+/* Phone only (≤760px): eight indicator cards as 2 across × 4 rows. Desktop untouched. */
+@media (max-width:760px){
+ .log{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .inst{padding:12px 11px 10px!important;border-radius:14px!important;gap:3px!important}
+ .inst h3{font-size:12.5px}
+ .inst .val{font-size:21px}
+ .inst .chg{font-size:11.5px}
+ .inst p{font-size:11.5px;line-height:1.45}
+ .inst .chip{font-size:10.5px;padding:1px 7px}
+ .inst svg{height:30px}
+}
 </style>
 
 <div class="wrap">
