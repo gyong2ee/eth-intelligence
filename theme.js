@@ -20,7 +20,7 @@
   var c=document.createElement('canvas');c.className='bul-guilloche';c.setAttribute('aria-hidden','true');h.prepend(c);
   // kicker above the title text
   var title=[].slice.call(h.childNodes).filter(function(n){return n.nodeType===3&&n.textContent.trim()})[0];
-  if(title){var wrap=document.createElement('span');var k=document.createElement('span');k.className='bul-kicker';k.textContent='LIQUIDITY BULLETIN · 시장 관측 회보';wrap.append(k,document.createTextNode(title.textContent.trim()));h.replaceChild(wrap,title)}
+  if(title){var wrap=document.createElement('span');var k=document.createElement('span');k.className='bul-kicker';k.textContent='시장 관측 회보';wrap.append(k,document.createTextNode(title.textContent.trim()));h.replaceChild(wrap,title)}
   var ser=document.createElement('span');ser.className='bul-serial';ser.setAttribute('aria-hidden','true');
   ser.append(document.createTextNode('제 '+iw[0]+'-'+String(iw[1]).padStart(2,'0')+' 호'));var b=document.createElement('b');b.textContent='No. '+String(seed).padStart(6,'0');ser.append(b);h.append(ser);
   if(getComputedStyle(h).display!=='flex'){h.style.display='flex';h.style.alignItems='center';h.style.gap='11px'}

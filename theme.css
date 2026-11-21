@@ -5,15 +5,16 @@
   --ink:#0a1220; --paper:#0f1a2b; --paper2:#13213a; --rule:#22324d; --rule2:#2d4163;
   --text:#ece6d6; --soft:#98a4b8; --dim:#6c7a90;
   --note:#6fbfa8; --note-deep:#2f6f61; --brass:#c9a45c; --brass-dim:#8a7140; --ebb:#e2735c;
-  --serif:"Noto Serif KR","Nanum Myeongjo","AppleMyungjo",serif;
-  --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --serif:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --num:"Inter","Noto Sans KR",system-ui,sans-serif;
+  --sans:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   color-scheme:dark;
 }
 body{background:var(--ink)!important;color:var(--text)!important;font-family:var(--sans)!important;-webkit-font-smoothing:antialiased;line-height:1.6}
 section,main>nav{background:var(--paper)!important;border:1px solid var(--rule2)!important;border-radius:2px!important;box-shadow:none!important}
 h1,h2,h3{font-family:var(--serif);letter-spacing:-.01em;color:var(--text)}
 h2{font-weight:700} h3{font-weight:700}
-.value{font-family:var(--serif);font-weight:700!important;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.01em}
+.value{font-family:var(--num);font-weight:600!important;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 small,main>p{color:var(--soft)!important}
 a{color:var(--brass)}
 a:hover{color:var(--text)}
@@ -27,14 +28,14 @@ th{font-family:var(--serif);color:var(--soft);font-weight:600}
 .tradingview-widget-container{border-radius:2px!important}
 
 /* masthead */
-main>h1{position:relative;overflow:hidden;margin-top:0;padding:18px 20px 16px!important;border:1px solid var(--rule2);background:var(--paper);font-family:var(--serif)!important;font-weight:900!important;letter-spacing:-.01em}
+main>h1{position:relative;overflow:hidden;margin-top:0;padding:18px 20px 16px!important;border:1px solid var(--rule2);background:var(--paper);font-family:var(--serif)!important;font-weight:700!important;letter-spacing:-.02em}
 main>h1 svg path{fill:var(--brass)!important}
 main>h1 svg path:nth-child(3){fill:#e8d3a0!important}
 main>h1 svg path:nth-child(4){fill:var(--brass-dim)!important}
 main>h1 .bul-guilloche{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none;z-index:0}
 main>h1>*:not(.bul-guilloche){position:relative;z-index:1}
-main>h1 .bul-kicker{display:block;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.22em;color:var(--brass)}
-main>h1 .bul-serial{margin-left:auto;text-align:right;font-family:var(--serif);font-size:13px;font-weight:500;color:var(--brass);line-height:1.5}
+main>h1 .bul-kicker{display:block;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--brass)}
+main>h1 .bul-serial{margin-left:auto;text-align:right;font-family:var(--num);font-size:13px;font-weight:500;color:var(--brass);line-height:1.5}
 main>h1 .bul-serial b{display:block;font-size:16px;letter-spacing:.12em;color:var(--ebb)}
 
 /* feature menu */
@@ -47,10 +48,10 @@ main>h1 .bul-serial b{display:block;font-size:16px;letter-spacing:.12em;color:va
 /* desktop sidebar: a bulletin index */
 @media(min-width:1100px){
  #desktopSidebar{background:var(--paper)!important;border-right:1px solid var(--rule2)!important;box-shadow:none!important}
- #desktopSidebar .side-brand{font-family:var(--serif)!important;font-weight:900!important;border-bottom:3px double var(--rule2);margin-bottom:8px}
+ #desktopSidebar .side-brand{font-family:var(--serif)!important;font-weight:700!important;border-bottom:3px double var(--rule2);margin-bottom:8px}
  #desktopSidebar .side-brand span{color:var(--text)!important}
  #desktopSidebar .side-brand svg path{fill:var(--brass)!important}
- #desktopSidebar .side-group{color:var(--brass)!important;font-weight:500!important;letter-spacing:.2em!important;font-size:10.5px!important}
+ #desktopSidebar .side-group{color:var(--brass)!important;font-weight:600!important;letter-spacing:.08em!important;font-size:11px!important}
  #desktopSidebar a{color:var(--soft)!important;border-radius:0!important;font-weight:500!important;border-left:2px solid transparent}
  #desktopSidebar a:hover,#desktopSidebar a:focus-visible{background:var(--paper2)!important;color:var(--text)!important}
  #desktopSidebar a.active{background:var(--paper2)!important;color:var(--text)!important;border-left-color:var(--brass)}
@@ -67,5 +68,5 @@ body>main>nav,main>nav{gap:24px}
 @media (max-width:600px){
  main>h1{padding:14px 14px 12px!important}
  main>h1 .bul-serial{display:none}
- main>h1 .bul-kicker{font-size:9.5px;letter-spacing:.14em}
+ main>h1 .bul-kicker{font-size:11px;letter-spacing:.04em}
 }
