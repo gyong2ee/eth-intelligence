@@ -20,6 +20,10 @@
 section[id]{scroll-margin-top:16px}
 #liqChart{position:relative}
 .chart-wrap{position:relative}
+.nc-main{position:relative;cursor:grab;touch-action:pan-y}.nc-main.dragging,.nc-nav.dragging{cursor:grabbing!important}
+.nc-nav-wrap{margin:8px 0 4px;padding:6px 8px 8px;border:1px solid rgba(45,65,99,.8);border-radius:10px;background:rgba(10,18,32,.5)}
+.nc-nav-label{display:flex;justify-content:space-between;font:500 11px/1.4 Inter,"Noto Sans KR",sans-serif;color:#6c7a90;margin-bottom:4px}
+.nc-nav{display:block;width:100%;touch-action:none;cursor:pointer;user-select:none;-webkit-user-select:none}
 #liqChart svg{cursor:crosshair;touch-action:none}
 .liq-tip{position:absolute;pointer-events:none;transform:translate(-50%,-100%);background:var(--fg);color:var(--bg);border-radius:10px;padding:7px 11px;display:grid;gap:1px;white-space:nowrap;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.35);z-index:5}
 .liq-tip b{font:700 15px/1.3 Inter,"Noto Sans KR",sans-serif}
@@ -199,7 +203,7 @@ svg text{font-family:var(--f-body)}
   <section class="panel" id="leverage">
     <div class="panel-head">
       <h2>레버리지 비율 · 미결제약정 ÷ 시가총액</h2>
-      <div class="seg-row"><div class="seg" id="levSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div></div>
+      <div class="seg-row"><div class="seg" id="levSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div><div class="seg" id="levRange"><button type="button" data-v="90" aria-pressed="false">3M</button><button type="button" data-v="180" aria-pressed="false">6M</button><button type="button" data-v="365" aria-pressed="true">1Y</button><button type="button" data-v="0" aria-pressed="false">전체</button></div></div>
     </div>
     <div class="opt-cards" id="levCards"></div>
     <div class="legend-row"><span><i style="background:var(--accent)"></i>레버리지 비율 (왼쪽 축)</span><span><i class="dash" style="border-top-style:solid"></i>코인 가격 (오른쪽 축)</span><span><i class="dash" style="border-top-color:var(--down)"></i>1년 상위 20%</span><span><i class="dash" style="border-top-color:var(--up)"></i>1년 하위 20%</span></div>

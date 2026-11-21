@@ -133,6 +133,59 @@
    series:series.map(function(s){return {name:s.name,color:s.color,pts:s.pts,x:X,y:(s.axis==='R'?R:L).Y,fmt:s.fmt}})});
  }
 
+
+ /* ---------- line chart with a full-period navigator underneath ----------
+    drag inside the window to move it, drag an edge to resize, click outside to jump there,
+    wheel over the chart or the navigator to zoom around the pointer, drag the chart to pan.
+    Redraws in place, no animation. st: {a,b} window kept by the caller across redraws. */
+ function navChart(box,series,o,st){
+  series=series.filter(function(s){return s.pts&&s.pts.length>1});
+  if(!series.length){box.innerHTML='<div class="empty">기록을 받지 못했습니다.</div>';return}
+  var full=series[0].pts,T0=Infinity,T1=-Infinity;series.forEach(function(s){T0=Math.min(T0,s.pts[0].t);T1=Math.max(T1,s.pts[s.pts.length-1].t)});
+  var minSpan=30*DAY;
+  if(!(st.a<st.b)||st.reset){st.b=T1;st.a=st.days>0?Math.max(T0,T1-st.days*DAY):T0;st.reset=false}
+  box.innerHTML='';var main=document.createElement('div');main.className='nc-main';
+  var wrap=document.createElement('div');wrap.className='nc-nav-wrap';
+  var lab=document.createElement('div');lab.className='nc-nav-label';lab.innerHTML='<span>전체 기간</span><span></span>';
+  var nav=el('svg',{class:'nc-nav','aria-label':(o.label||'차트')+' 전체 기간 선택'});
+  wrap.append(lab,nav);box.append(main,wrap);
+  function clamp(a,b){var span=Math.max(minSpan,Math.min(b-a,T1-T0));if(a<T0){a=T0;b=a+span}if(b>T1){b=T1;a=b-span}st.a=Math.max(T0,a);st.b=Math.min(T1,b)}
+  function cut(pts){var out=[],i;for(i=0;i<pts.length;i++)if(pts[i].t>=st.a&&pts[i].t<=st.b)out.push(pts[i]);return out}
+  var navGeo=null;
+  function drawNav(){
+   var W=Math.max(260,wrap.clientWidth-16||600),H=34;nav.setAttribute('viewBox','0 0 '+W+' '+H);nav.setAttribute('width','100%');nav.setAttribute('height',H);while(nav.firstChild)nav.removeChild(nav.firstChild);
+   var X=function(t){return (t-T0)/((T1-T0)||1)*W},lo=Infinity,hi=-Infinity;full.forEach(function(p){lo=Math.min(lo,p.v);hi=Math.max(hi,p.v)});
+   var Y=function(v){return H-2-(v-lo)/((hi-lo)||1)*(H-6)},d='';full.forEach(function(p,j){d+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
+   nav.appendChild(el('path',{d:d+'L'+W+' '+H+'L0 '+H+'Z',fill:'rgba(152,164,184,.22)'}));nav.appendChild(el('path',{d:d,fill:'none',stroke:'#6c7a90','stroke-width':1}));
+   var a=X(st.a),b=X(st.b);
+   nav.appendChild(el('rect',{x:0,y:0,width:Math.max(0,a),height:H,fill:'#0a1220','fill-opacity':.55}));nav.appendChild(el('rect',{x:b,y:0,width:Math.max(0,W-b),height:H,fill:'#0a1220','fill-opacity':.55}));
+   nav.appendChild(el('rect',{x:a,y:.5,width:Math.max(1,b-a),height:H-1,fill:'rgba(201,164,92,.16)',stroke:'#c9a45c','stroke-width':1,rx:3}));
+   [a,b].forEach(function(x){nav.appendChild(el('rect',{x:x-2.5,y:H/2-8,width:5,height:16,rx:2,fill:'#c9a45c'}))});
+   navGeo={W:W,X:X,a:a,b:b};lab.lastChild.textContent=ETHTrack.ymd(st.a)+' ~ '+ETHTrack.ymd(st.b);
+  }
+  function draw(){lineChart(main,series.map(function(s){return Object.assign({},s,{pts:cut(s.pts)})}),o);drawNav();if(o.onWindow)o.onWindow(st)}
+  function manual(){st.days=-1;if(o.onManual)o.onManual()}
+  function zoomAt(ratio,dy){var span=st.b-st.a,k=Math.exp(dy*.0015),ns=Math.max(minSpan,Math.min(T1-T0,span*k)),c=st.a+span*ratio;clamp(c-ns*ratio,c+ns*(1-ratio));manual();draw()}
+  function wd(e){return e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?120:1)}
+  var drag=null;
+  nav.addEventListener('pointerdown',function(e){if(e.button!==0||!navGeo)return;e.preventDefault();var r=nav.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*navGeo.W,span=st.b-st.a;
+   var mode=Math.abs(x-navGeo.a)<=10?'left':Math.abs(x-navGeo.b)<=10?'right':(x>navGeo.a&&x<navGeo.b)?'move':'jump';
+   if(mode==='jump'){var t=T0+x/navGeo.W*(T1-T0);clamp(t-span/2,t+span/2);manual();draw();mode='move'}
+   drag={mode:mode,x:e.clientX,a:st.a,b:st.b,w:r.width,el:nav};nav.setPointerCapture(e.pointerId);nav.classList.add('dragging')});
+  nav.addEventListener('pointermove',function(e){
+   if(!drag||drag.el!==nav){if(navGeo){var r=nav.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*navGeo.W;nav.style.cursor=(Math.abs(x-navGeo.a)<=10||Math.abs(x-navGeo.b)<=10)?'ew-resize':(x>navGeo.a&&x<navGeo.b)?'grab':'pointer'}return}
+   var dt=(e.clientX-drag.x)/drag.w*(T1-T0);
+   if(drag.mode==='move')clamp(drag.a+dt,drag.b+dt);else if(drag.mode==='left')clamp(Math.min(drag.a+dt,drag.b-minSpan),drag.b);else clamp(drag.a,Math.max(drag.b+dt,drag.a+minSpan));manual();draw()});
+  var end=function(){drag=null;nav.classList.remove('dragging');main.classList.remove('dragging')};
+  nav.addEventListener('pointerup',end);nav.addEventListener('pointercancel',end);
+  nav.addEventListener('wheel',function(e){if(!navGeo)return;e.preventDefault();var r=nav.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*navGeo.W;zoomAt(Math.max(0,Math.min(1,(x-navGeo.a)/Math.max(1,navGeo.b-navGeo.a))),wd(e))},{passive:false});
+  main.addEventListener('wheel',function(e){e.preventDefault();var r=main.getBoundingClientRect();zoomAt(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),wd(e))},{passive:false});
+  main.addEventListener('pointerdown',function(e){if(e.button!==0||e.pointerType==='touch'||st.b-st.a>=T1-T0-1)return;drag={mode:'pan',x:e.clientX,a:st.a,b:st.b,w:main.getBoundingClientRect().width,el:main};main.setPointerCapture(e.pointerId);main.classList.add('dragging')});
+  main.addEventListener('pointermove',function(e){if(!drag||drag.el!==main)return;var dt=-(e.clientX-drag.x)/drag.w*(drag.b-drag.a);clamp(drag.a+dt,drag.b+dt);manual();draw()});
+  main.addEventListener('pointerup',end);main.addEventListener('pointercancel',end);
+  draw();
+ }
+
  /* ---------- options (Deribit) ---------- */
  var optCur='ETH',optCache={};
  function drawOpt(){
@@ -183,14 +236,14 @@
  }
 
  /* ---------- leverage ratio: open interest / market cap ---------- */
- var levSym='ETHUSDT';
+ var levSym='ETHUSDT',levWin={days:365,reset:true};
  function drawLev(){
   var box=document.getElementById('levChart');box.innerHTML='<div class="empty">불러오는 중</div>';
   var sym=levSym,coin=sym.replace('USDT','');
   Promise.all([load('lev',sym),fetch('/api/deriv?src=oinow&coin='+coin).then(function(r){return r.ok?r.json():null}).catch(function(){return null})]).then(function(res){
    if(sym!==levSym)return;
-   var j=res[0],now=res[1],rows=j.rows||[];
-   var vals=rows.map(function(r){return r.ratio}).slice().sort(function(a,b){return a-b});
+   var j=res[0],now=res[1],rows=j.rows||[],end=rows.length?rows[rows.length-1].t:0;
+   var vals=rows.filter(function(r){return r.t>end-365*DAY}).map(function(r){return r.ratio}).sort(function(a,b){return a-b});
    var q=function(p){return vals[Math.min(vals.length-1,Math.floor(p*(vals.length-1)))]};
    var last=rows[rows.length-1],rank=vals.filter(function(v){return v<=last.ratio}).length/vals.length*100;
    var cards=document.getElementById('levCards');cards.innerHTML='';
@@ -199,11 +252,12 @@
    var tone=rank>=80?'down':rank<=20?'up':'',state=rank>=80?'레버리지 과열 구간':rank<=20?'레버리지 낮은 구간':'보통 구간';
    card('1년 중 위치',rank>=50?'상위 '+Math.max(1,Math.round(100-rank))+'%':'하위 '+Math.max(1,Math.round(rank))+'%',state+' · Bybit 기준',tone);
    card('Bybit 레버리지 비율',last.ratio.toFixed(3)+'%','1년 범위 '+vals[0].toFixed(3)+'% ~ '+vals[vals.length-1].toFixed(3)+'%','');
-   lineChart(box,[
+   navChart(box,[
     {name:coin+' 레버리지 비율',color:'var(--accent)',pts:rows.map(function(r){return {t:r.t,v:r.ratio}}),fmt:function(v){return v.toFixed(3)+'%'}},
     {name:coin+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:rows.map(function(r){return {t:r.t,v:r.price}}),fmt:function(v){return priceFmt(v,sym)}}
    ],{label:coin+' 레버리지 비율과 가격',h:260,fill:true,fy:function(v){return v.toFixed(2)+'%'},fyR:function(v){return priceFmt(v,sym)},
-    hlines:[{v:q(.8),label:'상위 20%',color:'var(--down)'},{v:q(.2),label:'하위 20%',color:'var(--up)'}]});
+    hlines:[{v:q(.8),label:'상위 20%',color:'var(--down)'},{v:q(.2),label:'하위 20%',color:'var(--up)'}],
+    onManual:function(){[].forEach.call(document.getElementById('levRange').children,function(x){x.setAttribute('aria-pressed','false')})}},levWin);
    document.getElementById('levSrc').textContent='시가총액: '+j.capSource;
   }).catch(function(e){box.innerHTML='<div class="empty">레버리지 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
  }
@@ -215,7 +269,7 @@
   seg('liqSym',function(v){liqSym=v;drawLiq()});
   if(document.getElementById('optChart')){seg('optCur',function(v){optCur=v;drawOpt()});drawOpt()}
   if(document.getElementById('lsChart')){seg('lsSym',function(v){lsSym=v;drawLS()});drawLS()}
-  if(document.getElementById('levChart')){seg('levSym',function(v){levSym=v;drawLev()});drawLev()}
+  if(document.getElementById('levChart')){seg('levSym',function(v){levSym=v;levWin.reset=true;drawLev()});seg('levRange',function(v){levWin.days=+v;levWin.reset=true;drawLev()});drawLev()}
   drawOI();drawLiq();
   var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq();if(document.getElementById('optChart'))drawOpt();if(document.getElementById('lsChart'))drawLS();if(document.getElementById('levChart'))drawLev()},200)});
  }
