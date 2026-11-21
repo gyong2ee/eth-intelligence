@@ -4,13 +4,11 @@
  var PAGES=[
   {href:'/',label:'시장 개요',paths:['/','/index.html']},
   {href:'/derivatives.html',label:'파생상품',paths:['/derivatives.html','/derivatives']},
-  {href:'/liquidity.html',label:'글로벌 유동성',paths:['/liquidity.html','/liquidity']},
-  {href:'/macro.html',label:'거시경제',paths:['/macro.html','/macro']}
+  {href:'/liquidity.html',label:'글로벌 유동성',paths:['/liquidity.html','/liquidity']}
  ];
  var SECTIONS={
   '/derivatives.html':[['한눈에 보기','summary'],['미결제약정 추이','oi'],['가격과 미결제약정 흐름','flow'],['펀딩비 수준','funding'],['Binance 펀딩비','binance'],['Bybit 미결제약정','bybit'],['데이터 소스','sources']],
-  '/liquidity.html':[['지금 판정','verdict-sec'],['지표 8개','instruments'],['순유동성 · M2 · 스테이블','main'],['재무부 통장 TGA','tga'],['역레포','rrp'],['달러 인덱스','dxy'],['미국 10년물','y10'],['DeFi 예치금','tvl']],
-  '/macro.html':[['M2 통화량','sec-m2'],['M2 증가율','sec-yoy'],['단기 · 장기 금리','sec-rates'],['10년 − 2년 금리차','sec-spread'],['달러 인덱스','sec-dxy']]
+  '/liquidity.html':[['지금 판정','verdict-sec'],['지표 8개','instruments'],['순유동성 · M2 · 스테이블','main'],['재무부 통장 TGA','tga'],['역레포','rrp'],['달러 인덱스','dxy'],['미국 10년물','y10'],['DeFi 예치금','tvl']]
  };
  var ETH='<svg width="18" height="27" viewBox="0 0 24 36" aria-hidden="true"><path d="M12 1L1 18l11-5.2L23 18 12 1Z"/><path d="M1 20.5 12 35l11-14.5-11 6.3L1 20.5Z"/><path d="M1 18 12 12.8V25L1 18Z" opacity=".7"/><path d="M23 18 12 12.8V25l11-7Z" opacity=".45"/></svg>';
  var path=location.pathname.replace(/\/+$/,'')||'/';
