@@ -98,3 +98,30 @@ body>main>nav,main>nav{gap:24px}
 .sa-card b{font:600 22px/1.2 Inter,"Noto Sans KR",sans-serif;letter-spacing:-.02em;color:var(--text)}
 .sa-card .sa-note{font-size:11.5px;color:var(--dim)!important}
 .sa-empty{font-size:13px;color:var(--soft)}
+
+/* ===== Phone only (≤760px). Desktop layout must not change: keep every rule below inside this query. ===== */
+@media (max-width:760px){
+ /* every TradingView chart as tall as the ETH chart */
+ .tradingview-widget-container.tradingview-widget-container.tradingview-widget-container{height:520px!important;min-height:520px!important;max-height:none!important}
+ .tradingview-widget-container.tradingview-widget-container.tradingview-widget-container iframe{height:100%!important;min-height:0!important}
+ /* summary tiles 2 x 2 instead of one long column */
+ #summaryCards.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #summaryCards>div{padding:12px!important}
+ /* 2Y and 10Y side by side, overlay underneath at full width */
+ .macrogrid.yield-pair.yield-trio{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .macrogrid.yield-pair.yield-trio>section{grid-column:auto!important}
+ .macrogrid.yield-pair.yield-trio>.yield-overlay{grid-column:1/-1!important}
+ .macrogrid.yield-pair.yield-trio>section:not(.yield-overlay) .eth-mini-nav>div:first-child>span:first-child{display:none}
+ /* fear & greed and MVRV on one row */
+ .market-signals{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:14px 0}
+ .market-signals>section{margin:0!important;min-width:0!important;padding:14px!important}
+ .market-signals>section h3{font-size:14px!important}
+ .market-signals>section svg{max-height:120px!important}
+ .market-signals>section button{font-size:11.5px!important;padding:6px 8px!important;white-space:normal}
+ /* staking APR: all four cards on one row */
+ .sa-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ .sa-card{min-width:0!important;padding:8px 7px!important;border-radius:10px!important}
+ .sa-card small{font-size:10px!important;line-height:1.3;overflow-wrap:anywhere}
+ .sa-card b{font-size:15px!important}
+ .sa-card .sa-note{display:none}
+}

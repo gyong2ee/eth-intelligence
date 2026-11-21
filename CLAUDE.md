@@ -26,6 +26,16 @@ regions, so keep that setting.
   30Y blue `#5b8def`, EFFR off-white `#ece6d6`. Up/ease green `#6fbfa8`, down/tight `#e2735c`.
 - Write UI copy in Korean, plain and short. Mark modeled numbers as "추정".
 
+## Mobile
+
+- Mobile fixes must never change the desktop layout. Put them only inside
+  `@media (max-width:760px)` blocks (end of `theme.css` / `nav.css`), and compare desktop
+  before/after when changing them.
+- On phones every TradingView chart is the ETH chart's height (520px); summary tiles are 2×2;
+  fear & greed and MVRV share a row; the four staking APR cards share a row; 2Y and 10Y share a
+  row with the overlay chart full width below; the back-to-top button is smaller and shows after
+  scrolling; the top tabs use position:fixed (sticky fails in iOS Safari / in-app browsers).
+
 ## Navigation
 
 - Top tabs (sticky): 시장 개요 · 파생상품 · 글로벌 유동성. Left list shows the current page's

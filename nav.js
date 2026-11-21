@@ -19,6 +19,8 @@
   var nav=document.createElement('nav');nav.className='site-tabs';nav.setAttribute('aria-label','페이지');
   PAGES.forEach(function(p){var a=document.createElement('a');a.href=p.href;a.textContent=p.label;if(p===page)a.setAttribute('aria-current','page');nav.appendChild(a)});
   host.insertBefore(nav,host.firstChild);
+  // keeps the page from jumping under the fixed tab bar on phones (hidden on desktop)
+  var sp=document.createElement('div');sp.className='site-tabs-spacer';sp.setAttribute('aria-hidden','true');nav.after(sp);
  }
  function side(){
   var existing=document.getElementById('desktopSidebar');
@@ -44,6 +46,8 @@
   b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
   b.addEventListener('click',function(){window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
   document.body.appendChild(b);
+  // .show is only used by the phone stylesheet; desktop keeps the button always visible
+  var tick=function(){b.classList.toggle('show',window.scrollY>600)};window.addEventListener('scroll',tick,{passive:true});tick();
  }
  function init(){tabs();side();toTop()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
