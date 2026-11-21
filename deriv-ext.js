@@ -104,13 +104,79 @@
   }).catch(function(e){box.innerHTML='<div class="empty">청산맵을 계산하지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>';note.textContent=''});
  }
 
+ /* ---------- shared simple line chart (one or more comparable series, one axis) ---------- */
+ function lineChart(box,series,o){
+  series=series.filter(function(s){return s.pts&&s.pts.length>1});
+  if(!series.length){box.innerHTML='<div class="empty">기록을 받지 못했습니다.</div>';return}
+  var W=Math.max(280,box.clientWidth||700),H=o.h||240,m={l:8,r:58,t:14,b:24};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':o.label});
+  var all=[];series.forEach(function(s){s.pts.forEach(function(p){all.push(p)})});
+  var t0=Math.min.apply(null,all.map(function(p){return p.t})),t1=Math.max.apply(null,all.map(function(p){return p.t}));
+  var lo=Math.min.apply(null,all.map(function(p){return p.v})),hi=Math.max.apply(null,all.map(function(p){return p.v}));
+  if(o.base!=null){lo=Math.min(lo,o.base);hi=Math.max(hi,o.base)}
+  var pad=(hi-lo)*.1||1;lo-=pad;hi+=pad;
+  var X=function(t){return m.l+(t-t0)/((t1-t0)||1)*(W-m.l-m.r)},Y=function(v){return m.t+(1-(v-lo)/(hi-lo))*(H-m.t-m.b)};
+  var st=niceStep((hi-lo)/4);
+  for(var g=Math.ceil(lo/st)*st;g<=hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:Y(g),y2:Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,Y(g)+4,o.fy(g)))}
+  if(o.base!=null)svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:Y(o.base),y2:Y(o.base),stroke:'var(--muted)','stroke-dasharray':'4 4'}));
+  var n=W<480?3:5;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0')+(o.days?'.'+String(d.getUTCDate()).padStart(2,'0'):''),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
+  series.forEach(function(s,i){var path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
+   if(i===0&&o.fill)svg.appendChild(el('path',{d:path+'L'+X(s.pts[s.pts.length-1].t)+' '+(H-m.b)+'L'+X(s.pts[0].t)+' '+(H-m.b)+'Z',fill:s.color,'fill-opacity':.1}));
+   svg.appendChild(el('path',{d:path,fill:'none',stroke:s.color,'stroke-width':s.w||2,'stroke-linejoin':'round'}))});
+  box.innerHTML='';box.appendChild(svg);
+  if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:function(sx){return t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0)},date:ETHTrack.ymd,
+   series:series.map(function(s){return {name:s.name,color:s.color,pts:s.pts,x:X,y:Y,fmt:s.fmt}})});
+ }
+
+ /* ---------- options (Deribit) ---------- */
+ var optCur='ETH',optCache={};
+ function drawOpt(){
+  var box=document.getElementById('optChart');box.innerHTML='<div class="empty">불러오는 중</div>';
+  var p=optCache[optCur]||(optCache[optCur]=fetch('/api/options?currency='+optCur).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||('HTTP '+r.status));return j})}));
+  p.catch(function(){delete optCache[optCur]});
+  p.then(function(j){
+   var pc=j.putCall,cards=document.getElementById('optCards');cards.innerHTML='';
+   var card=function(k,v,s,cls){var d=document.createElement('div');d.className='opt-card';var a=document.createElement('span');a.className='label';a.textContent=k;var b=document.createElement('b');b.className='num'+(cls?' '+cls:'');b.textContent=v;var c=document.createElement('span');c.className='note';c.textContent=s;d.append(a,b,c);cards.appendChild(d)};
+   var tone=function(r){return r==null?'':r>=1?'down':r<=0.6?'up':''};
+   if(pc){card('풋/콜 비율 · 미결제약정',pc.oi.ratio.toFixed(2),'풋 '+pc.oi.put.toLocaleString('en-US')+' · 콜 '+pc.oi.call.toLocaleString('en-US')+' '+optCur,tone(pc.oi.ratio));
+    if(pc.volume.ratio!=null)card('풋/콜 비율 · 24시간 거래량',pc.volume.ratio.toFixed(2),'1보다 크면 하락 대비(풋)가 더 많음',tone(pc.volume.ratio))}
+   var dv=j.dvol||[];
+   if(dv.length){var last=dv[dv.length-1],m30=dv.filter(function(x){return x.t<=last.t-30*DAY}).pop();var ch=m30?last.v-m30.v:null;
+    card('내재변동성 DVOL',last.v.toFixed(1),'30일 '+(ch==null?'—':(ch>=0?'+':'')+ch.toFixed(1)+'p')+' · 시장이 예상하는 연간 변동 폭(%)','')}
+   var yr=dv.filter(function(x){return x.t>=dv[dv.length-1].t-365*DAY});
+   lineChart(box,[{name:optCur+' DVOL',color:'var(--accent)',pts:yr,fmt:function(v){return v.toFixed(1)}}],{label:optCur+' 내재변동성',fy:function(v){return v.toFixed(0)},fill:true});
+   document.getElementById('optTime').textContent=new Date(j.fetchedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' 기준';
+  }).catch(function(e){box.innerHTML='<div class="empty">옵션 데이터를 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
+ }
+
+ /* ---------- long/short account ratio ---------- */
+ var lsSym='ETHUSDT';
+ function drawLS(){
+  var box=document.getElementById('lsChart');box.innerHTML='<div class="empty">불러오는 중</div>';
+  load('ls',lsSym).then(function(j){
+   var by=(j.bybit||[]),bn=(j.binance||[]),end=Math.max(by.length?by[by.length-1].t:0,bn.length?bn[bn.length-1].t:0);
+   var yr=by.filter(function(x){return x.t>=end-365*DAY});
+   var cards=document.getElementById('lsCards');cards.innerHTML='';
+   var card=function(k,v,s,cls){var d=document.createElement('div');d.className='opt-card';var a=document.createElement('span');a.className='label';a.textContent=k;var b=document.createElement('b');b.className='num'+(cls?' '+cls:'');b.textContent=v;var c=document.createElement('span');c.className='note';c.textContent=s;d.append(a,b,c);cards.appendChild(d)};
+   var tone=function(v){return v>=60?'down':v<=40?'up':''};
+   if(by.length){var l=by[by.length-1].long;card('Bybit 롱 계정',l.toFixed(1)+'%','숏 '+(100-l).toFixed(1)+'% · 롱/숏 '+(l/(100-l)).toFixed(2),tone(l))}
+   if(bn.length){var b2=bn[bn.length-1].long;card('Binance 롱 계정',b2.toFixed(1)+'%','숏 '+(100-b2).toFixed(1)+'% · 롱/숏 '+(b2/(100-b2)).toFixed(2),tone(b2))}
+   lineChart(box,[
+    {name:'Bybit 롱 계정',color:'var(--accent)',pts:yr.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'}},
+    {name:'Binance 롱 계정',color:'var(--up)',pts:bn.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4}
+   ],{label:'롱 계정 비율',fy:function(v){return v.toFixed(0)+'%'},base:50});
+  }).catch(function(e){box.innerHTML='<div class="empty">롱/숏 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
+ }
+
  function start(){
   if(!document.getElementById('oiLongChart'))return;
   seg('oiLongSym',function(v){oiState.sym=v;drawOI()});
   seg('oiLongRange',function(v){oiState.days=+v;drawOI()});
   seg('liqSym',function(v){liqSym=v;drawLiq()});
+  if(document.getElementById('optChart')){seg('optCur',function(v){optCur=v;drawOpt()});drawOpt()}
+  if(document.getElementById('lsChart')){seg('lsSym',function(v){lsSym=v;drawLS()});drawLS()}
   drawOI();drawLiq();
-  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq()},200)});
+  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq();if(document.getElementById('optChart'))drawOpt();if(document.getElementById('lsChart'))drawLS()},200)});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

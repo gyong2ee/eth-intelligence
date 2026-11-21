@@ -7,6 +7,12 @@
 .legend-row i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .legend-row i.dash{width:12px;height:0;border-top:2px dashed var(--fg);border-radius:0;vertical-align:3px}
 #oiLong .note,#liqmap .note{margin:6px 0 0}
+.opt-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 0 12px}
+@media (max-width:760px){.opt-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.opt-card{padding:10px 11px}.opt-card b{font-size:20px}.opt-card .note{font-size:11.5px}}
+.opt-card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:2px;min-width:0}
+.opt-card b{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.opt-card b.up{color:var(--up)} .opt-card b.down{color:var(--down)}
+.opt-card .note{margin:0!important}
 /* redundant with the long open-interest chart */
 #oi,#bybit{display:none!important}
 #binance{grid-column:1/-1}
@@ -190,6 +196,27 @@ svg text{font-family:var(--f-body)}
     <div class="chart-wrap" id="liqChart"><div class="empty">계산 중</div></div>
     <p class="note num" id="liqNote"></p>
     <p class="note">최근 30일 Bybit 시간별 미결제약정 증가분을 그 시점 가격에 새 포지션이 생긴 것으로 보고, 롱·숏 계정 비율과 10·25·50·100배 레버리지를 가정해 청산 가격을 쌓은 모델입니다. 이미 가격이 지나간 구간은 지웁니다. 실제 청산 데이터가 아닙니다. <a id="liqLink" href="https://www.coinglass.com/pro/futures/LiquidationHeatMap" target="_blank" rel="noopener noreferrer">Coinglass 실제 청산맵 보기 ↗</a></p>
+  </section>
+
+  <section class="panel" id="options">
+    <div class="panel-head">
+      <h2>옵션 시장 · Deribit</h2>
+      <div class="seg-row"><div class="seg" id="optCur"><button type="button" data-v="ETH" aria-pressed="true">ETH</button><button type="button" data-v="BTC" aria-pressed="false">BTC</button></div><span class="note" id="optTime"></span></div>
+    </div>
+    <div class="opt-cards" id="optCards"></div>
+    <div class="chart-wrap" id="optChart"><div class="empty">불러오는 중</div></div>
+    <p class="note">풋/콜 비율이 1보다 크면 하락에 대비하는 옵션이 더 많다는 뜻입니다. DVOL은 옵션 가격에 담긴 앞으로 30일 변동성 예상치(연율, %)로, 오르면 시장이 큰 움직임을 예상하는 것입니다. 최근 1년.</p>
+  </section>
+
+  <section class="panel" id="longshort">
+    <div class="panel-head">
+      <h2>롱/숏 계정 비율</h2>
+      <div class="seg-row"><div class="seg" id="lsSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div></div>
+    </div>
+    <div class="opt-cards" id="lsCards"></div>
+    <div class="legend-row"><span><i style="background:var(--accent)"></i>Bybit 롱 계정 (1년)</span><span><i style="background:var(--up)"></i>Binance 롱 계정 (30일)</span><span><i class="dash" style="border-top-color:var(--muted)"></i>50%</span></div>
+    <div class="chart-wrap" id="lsChart"><div class="empty">불러오는 중</div></div>
+    <p class="note">무기한 선물에서 롱 포지션을 가진 계정의 비율(금액이 아니라 계정 수 기준). 한쪽으로 크게 쏠리면 반대 방향 청산이 나오기 쉽습니다. Bybit 최근 1년 · Binance 최근 30일. 점선은 50%.</p>
   </section>
 
   <div class="two">
