@@ -1,6 +1,7 @@
 /* Shared site navigation: page tabs on top, the current page's section list on the left (desktop). */
 .site-tabs{display:flex!important;gap:4px!important;margin:0 0 18px!important;padding:0!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
- position:static!important;inset:auto!important;width:auto!important;max-width:100%!important;transform:none!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;z-index:auto!important}
+ position:sticky!important;top:env(safe-area-inset-top,0px)!important;bottom:auto!important;left:auto!important;right:auto!important;width:auto!important;max-width:100%!important;transform:none!important;z-index:80!important;
+ padding:10px 0!important;margin:-10px 0 14px!important;background:rgba(10,18,32,.86)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)!important;border:0!important;border-bottom:1px solid rgba(45,65,99,.45)!important;border-radius:0!important;box-shadow:none!important}
 .site-tabs::-webkit-scrollbar{display:none}
 .site-tabs a{flex:none;color:#98a4b8!important;text-decoration:none!important;font:500 13.5px/1 "Noto Sans KR",system-ui,sans-serif;padding:9px 14px;border-radius:999px;white-space:nowrap}
 .site-tabs a:hover{color:#ece6d6!important;background:rgba(236,230,214,.05)}
@@ -27,3 +28,15 @@
  .site-side .side-footer a{border:1px solid #1d2a40!important}
 }
 @media (prefers-reduced-motion:reduce){.site-tabs a,.site-side a{transition:none}}
+
+/* anchors land below the pinned tabs */
+main [id],.wrap [id]{scroll-margin-top:72px}
+
+/* back-to-top button, always visible */
+.to-top{position:fixed;z-index:95;right:max(18px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));
+ width:44px;height:44px;border-radius:50%!important;display:grid;place-items:center;padding:0!important;cursor:pointer;
+ background:rgba(19,33,58,.92)!important;color:#ece6d6!important;border:1px solid #2d4163!important;box-shadow:0 6px 18px rgba(0,0,0,.35);
+ -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:transform .15s,border-color .15s}
+.to-top:hover{border-color:#c9a45c!important;color:#c9a45c!important;transform:translateY(-2px)}
+.to-top:focus-visible{outline:2px solid #c9a45c;outline-offset:3px}
+.to-top svg{width:18px;height:18px}

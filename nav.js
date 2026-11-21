@@ -40,6 +40,13 @@
    links[0].classList.add('active');
   }
  }
- function init(){tabs();side()}
+ function toTop(){
+  if(document.querySelector('.to-top'))return;
+  var b=document.createElement('button');b.type='button';b.className='to-top';b.setAttribute('aria-label','맨 위로');b.title='맨 위로';
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+  b.addEventListener('click',function(){window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
+  document.body.appendChild(b);
+ }
+ function init(){tabs();side();toTop()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
