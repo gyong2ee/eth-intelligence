@@ -1,4 +1,12 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}[id]{scroll-margin-top:16px}
+.tabs.range{margin:0 0 10px;width:max-content}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--soft);margin:0 0 6px}
+.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.apy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.apy{border:1px solid var(--rule);border-radius:14px;padding:12px 14px;display:grid;gap:2px}
+.apy .v{font-family:var(--num);font-weight:600;font-size:24px;letter-spacing:-.02em}
+.apy .k{font-size:13px;font-weight:600}
+.apy .s{font-size:12px;color:var(--soft)}
 </style><link rel="stylesheet" href="/nav.css"><script src="/nav.js" defer></script><title>글로벌 유동성</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,13 +152,20 @@ button{border-radius:999px}
     <div class="sec-head" style="border:0;padding:0">
       <h2 id="mainTitle">연준 순유동성</h2>
       <div class="tabs" id="mainTabs">
-        <button type="button" data-k="net" aria-pressed="true">순유동성</button>
-        <button type="button" data-k="m2" aria-pressed="false">M2 증가율</button>
-        <button type="button" data-k="stable" aria-pressed="false">스테이블코인</button>
+        <button type="button" data-k="net" aria-pressed="true">순유동성 구성</button>
+        <button type="button" data-k="stable" aria-pressed="false">스테이블코인 · DeFi</button>
       </div>
     </div>
     <p class="sub" id="mainSub"></p>
+    <div class="tabs range" id="mainRange"><button type="button" data-d="365" aria-pressed="false">1년</button><button type="button" data-d="730" aria-pressed="false">2년</button><button type="button" data-d="0" aria-pressed="true">전체</button></div>
+    <div class="legend" id="mainLegend"></div>
     <div class="chart" id="mainChart"><div class="empty">관측값이 들어오면 그려집니다.</div></div>
+  </section>
+
+  <section class="panel" id="apy">
+    <div class="sec-head" style="border:0;padding:0"><h2>스테이블코인 예치 수익률 (APY)</h2><span class="cap" id="apyTime"></span></div>
+    <p class="sub">거래소에 USDT·USDC를 맡겼을 때 지금 받는 연 수익률입니다. Aave는 온체인 예치 참고값입니다.</p>
+    <div class="apy-grid" id="apyGrid"><div class="empty">불러오는 중</div></div>
   </section>
 
   <section class="grid5">
@@ -316,19 +331,78 @@ function chart(box,p,o){
   ov.addEventListener('pointerleave',()=>{tip.hidden=true;cross.setAttribute('visibility','hidden');dot.setAttribute('visibility','hidden')});
   svg.append(ov);box.append(svg,tip);
 }
+function chartMulti(box,series,o){
+  box.innerHTML='';series=series.filter(x=>x.pts&&x.pts.length>1);
+  if(!series.length){box.innerHTML='<div class="empty">관측값을 받지 못했습니다.</div>';return}
+  const W=Math.max(260,box.clientWidth||600),H=o.h||280,dual=series.some(x=>x.axis==='R'),m={l:o.ml||52,r:dual?(o.mr||52):12,t:12,b:26};
+  const svg=el('svg',{class:'c',viewBox:'0 0 '+W+' '+H,height:H,role:'img','aria-label':o.label});
+  const t0=Math.min(...series.map(x=>x.pts[0].t)),t1=Math.max(...series.map(x=>x.pts.at(-1).t));
+  const scale=side=>{const ss=series.filter(x=>(x.axis||'L')===side);if(!ss.length)return null;let lo=Math.min(...ss.flatMap(x=>x.pts.map(p=>p.v))),hi=Math.max(...ss.flatMap(x=>x.pts.map(p=>p.v)));if(o.floor0)lo=Math.min(lo,0);const pad=(hi-lo)*.08||1;lo-=pad;hi+=pad;if(o.floor0)lo=Math.max(lo,0);return {lo,hi}};
+  const SL=scale('L'),SR=scale('R');
+  const x=t=>m.l+(t-t0)/((t1-t0)||1)*(W-m.l-m.r),yOf=S=>v=>m.t+(1-(v-S.lo)/(S.hi-S.lo))*(H-m.t-m.b);
+  const yl=SL?yOf(SL):null,yr=SR?yOf(SR):null;
+  if(SL){const st=niceStep((SL.hi-SL.lo)/4);for(let v=Math.ceil(SL.lo/st)*st;v<=SL.hi;v+=st){svg.append(el('line',{x1:m.l,x2:W-m.r,y1:yl(v),y2:yl(v),stroke:'var(--rule)'}));const tx=el('text',{x:m.l-8,y:yl(v)+4,'text-anchor':'end'});tx.textContent=o.fyL(v);svg.append(tx)}}
+  if(SR){const st=niceStep((SR.hi-SR.lo)/4);for(let v=Math.ceil(SR.lo/st)*st;v<=SR.hi;v+=st){const tx=el('text',{x:W-m.r+8,y:yr(v)+4,'text-anchor':'start'});tx.textContent=o.fyR(v);svg.append(tx)}}
+  const spanY=(t1-t0)/(365.25*DAY);
+  if(spanY>2.5){for(let yr2=new Date(t0).getUTCFullYear()+1;Date.UTC(yr2,0,1)<=t1;yr2++){const t=Date.UTC(yr2,0,1);const tx=el('text',{x:x(t),y:H-7,'text-anchor':'middle'});tx.textContent=yr2;svg.append(tx)}}
+  else{const d0=new Date(t0);for(let k=1;k<=40;k++){const t=Date.UTC(d0.getUTCFullYear(),d0.getUTCMonth()+k,1);if(t>t1)break;const step=spanY>1.5?(W<520?6:3):(W<520?3:2);if(k%step)continue;const dd=new Date(t);const tx=el('text',{x:x(t),y:H-7,'text-anchor':'middle'});tx.textContent=(dd.getUTCMonth()===0?"'"+String(dd.getUTCFullYear()).slice(2)+' ':'')+(dd.getUTCMonth()+1)+'월';svg.append(tx)}}
+  series.forEach(sr=>{const Y=sr.axis==='R'?yr:yl;const d=sr.pts.map((q,i)=>(i?'L':'M')+x(q.t).toFixed(1)+' '+Y(q.v).toFixed(1)).join(' ');
+    if(sr.fill){svg.append(el('path',{d:d+' L'+x(sr.pts.at(-1).t)+' '+(H-m.b)+' L'+x(sr.pts[0].t)+' '+(H-m.b)+' Z',fill:sr.col,opacity:.10}))}
+    svg.append(el('path',{d,fill:'none',stroke:sr.col,'stroke-width':sr.w||1.8,'stroke-linejoin':'round','stroke-dasharray':sr.dash||''}))});
+  const cross=el('line',{y1:m.t,y2:H-m.b,stroke:'var(--soft)','stroke-dasharray':'2 3',visibility:'hidden'});svg.append(cross);
+  const dots=series.map(sr=>{const c=el('circle',{r:3.5,fill:sr.col,visibility:'hidden'});svg.append(c);return c});
+  const tip=document.createElement('div');tip.className='tip';tip.hidden=true;
+  const ov=el('rect',{x:m.l,y:0,width:W-m.l-m.r,height:H,fill:'transparent'});
+  ov.addEventListener('pointermove',ev=>{const r=svg.getBoundingClientRect(),sx=(ev.clientX-r.left)*W/r.width,t=t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0);
+    cross.setAttribute('x1',sx);cross.setAttribute('x2',sx);cross.setAttribute('visibility','visible');
+    const parts=[];series.forEach((sr,i)=>{const q=atOrBefore(sr.pts,t);if(!q){dots[i].setAttribute('visibility','hidden');return}const Y=sr.axis==='R'?yr:yl;dots[i].setAttribute('cx',x(q.t));dots[i].setAttribute('cy',Y(q.v));dots[i].setAttribute('visibility','visible');parts.push(sr.name+' '+sr.fmt(q.v))});
+    const dd=new Date(t);tip.hidden=false;tip.style.left=(sx*r.width/W)+'px';tip.style.top='18px';tip.style.transform='translate(-50%,0)';tip.textContent=dd.getUTCFullYear()+'.'+(dd.getUTCMonth()+1)+'.'+dd.getUTCDate()+'  ·  '+parts.join('  ·  ')});
+  ov.addEventListener('pointerleave',()=>{tip.hidden=true;cross.setAttribute('visibility','hidden');dots.forEach(d=>d.setAttribute('visibility','hidden'))});
+  svg.append(ov);box.append(svg,tip);
+  const lg=$('mainLegend');if(lg&&o.legend){lg.innerHTML='';series.forEach(sr=>{const sp=document.createElement('span');const i=document.createElement('i');i.style.background=sr.col;sp.append(i,document.createTextNode(sr.name+(sr.axis==='R'?' (오른쪽 축)':'')));lg.append(sp)})}
+}
+// one shared window for series that should be compared: starts where every series has data
+function common(list,days){list=list.filter(p=>p&&p.length);if(!list.length)return null;let a=Math.max(...list.map(p=>p[0].t)),b=Math.min(...list.map(p=>p.at(-1).t));if(days)a=Math.max(a,b-days*DAY);return {a,b}}
+const cut=(p,w)=>p&&w?p.filter(q=>q.t>=w.a&&q.t<=w.b+7*DAY):p;
 const MAIN={
-  net:{title:'연준 순유동성',sub:'연준 총자산에서 재무부 통장(TGA)과 역레포를 뺀 값. 시장에 실제로 풀려 있는 달러의 양에 가깝습니다. 최근 5년.',pts:d=>d.net,o:{fy:v=>'$'+(v/1000).toFixed(1)+'T',ft:v=>bn(v)}},
-  m2:{title:'미국 통화량(M2) 증가율',sub:'1년 전보다 시중 통화량이 몇 % 늘었는지. 점선 아래로 내려가면 통화량이 실제로 줄어드는 드문 구간입니다. 최근 10년.',pts:d=>d.m2&&yoy(d.m2).filter(p=>p.t>=Date.now()-10*365.25*DAY),o:{zero:true,monthly:true,fy:v=>v.toFixed(0)+'%',ft:v=>pct(v)}},
-  stable:{title:'스테이블코인 시가총액',sub:'USDT·USDC 등 달러 연동 코인의 총 발행량. 코인 시장에 대기 중인 달러입니다. 최근 5년.',pts:d=>d.stable,o:{fy:v=>'$'+Math.round(v)+'B',ft:v=>bn(v)}}
+  net:{title:'연준 순유동성과 구성 요소',sub:'순유동성 = 연준 총자산 − 재무부 통장(TGA) − 역레포. 네 개를 같은 기간, 같은 단위로 겹쳐 봅니다. 기간은 네 자료가 모두 있는 시점부터.'},
+  stable:{title:'스테이블코인 시가총액 · 이더리움 DeFi 예치금',sub:'코인 시장에 대기 중인 달러(왼쪽 축)와 이더리움 앱에 맡겨진 돈(오른쪽 축)을 같은 기간으로 비교합니다.'}
 };
 function renderCharts(){
   const m=MAIN[S.main];$('mainTitle').textContent=m.title;$('mainSub').textContent=m.sub;
-  chart($('mainChart'),m.pts(S.d),Object.assign({h:280,ml:52,label:m.title},m.o));
-  chart($('tgaChart'),lastYear(S.d.tga)?.length?S.d.tga.filter(p=>p.t>=S.d.tga.at(-1).t-730*DAY):null,{label:'TGA',fy:v=>'$'+Math.round(v)+'B',ft:v=>bn(v),floor0:true});
-  chart($('rrpChart'),S.d.rrp&&S.d.rrp.filter(p=>p.t>=S.d.rrp.at(-1).t-730*DAY),{label:'역레포',fy:v=>'$'+Math.round(v)+'B',ft:v=>bn(v),floor0:true,col:'var(--brass)'});
-  chart($('dxyChart'),lastYear(S.d.dxy),{h:170,ml:36,label:'달러 인덱스',fy:v=>v.toFixed(0),ft:v=>v.toFixed(2),col:'var(--ebb)'});
-  chart($('y10Chart'),lastYear(S.d.y10),{h:170,ml:42,label:'10년물',fy:v=>v.toFixed(1)+'%',ft:v=>v.toFixed(2)+'%',col:'var(--ebb)'});
-  chart($('tvlChart'),lastYear(S.d.tvl),{h:170,ml:42,label:'TVL',fy:v=>'$'+Math.round(v/1e9)+'B',ft:v=>bn(v/1e9)});
+  const d=S.d,days=S.range||0,T=v=>'$'+(v/1000).toFixed(2)+'T';
+  const wNet=common([d.walcl,d.net,d.tga,d.rrp],days);
+  if(S.main==='net'){
+    chartMulti($('mainChart'),[
+      {name:'연준 총자산',col:'var(--soft)',pts:cut(d.walcl,wNet),fmt:T,dash:'5 4'},
+      {name:'순유동성',col:'var(--note)',pts:cut(d.net,wNet),fmt:T,w:2.4,fill:true},
+      {name:'TGA',col:'var(--brass)',pts:cut(d.tga,wNet),fmt:T},
+      {name:'역레포',col:'var(--ebb)',pts:cut(d.rrp,wNet),fmt:T}
+    ],{h:300,ml:56,label:m.title,legend:true,floor0:true,fyL:v=>'$'+(v/1000).toFixed(1)+'T'});
+  }else{
+    const tvlB=d.tvl&&d.tvl.map(p=>({t:p.t,v:p.v/1e9}));const w=common([d.stable,tvlB],days);
+    chartMulti($('mainChart'),[
+      {name:'스테이블코인',col:'var(--note)',pts:cut(d.stable,w),fmt:v=>bn(v),w:2.2,fill:true},
+      {name:'DeFi 예치금(TVL)',col:'var(--brass)',pts:cut(tvlB,w),fmt:v=>bn(v),axis:'R'}
+    ],{h:300,ml:52,mr:48,label:m.title,legend:true,fyL:v=>'$'+Math.round(v)+'B',fyR:v=>'$'+Math.round(v)+'B'});
+  }
+  // TGA and reverse repo follow the same window as the net-liquidity view
+  chart($('tgaChart'),cut(d.tga,wNet),{label:'TGA',fy:v=>'$'+Math.round(v)+'B',ft:v=>bn(v),floor0:true});
+  chart($('rrpChart'),cut(d.rrp,wNet),{label:'역레포',fy:v=>'$'+Math.round(v)+'B',ft:v=>bn(v),floor0:true,col:'var(--brass)'});
+  chart($('dxyChart'),lastYear(d.dxy),{h:170,ml:36,label:'달러 인덱스',fy:v=>v.toFixed(0),ft:v=>v.toFixed(2),col:'var(--ebb)'});
+  chart($('y10Chart'),lastYear(d.y10),{h:170,ml:42,label:'10년물',fy:v=>v.toFixed(1)+'%',ft:v=>v.toFixed(2)+'%',col:'var(--ebb)'});
+  chart($('tvlChart'),lastYear(d.tvl),{h:170,ml:42,label:'TVL',fy:v=>'$'+Math.round(v/1e9)+'B',ft:v=>bn(v/1e9)});
+}
+function renderApy(y){
+  const g=$('apyGrid');g.innerHTML='';
+  const rows=(y&&y.stable)||[];
+  if(!rows.length){g.innerHTML='<div class="empty">예치 수익률을 받지 못했습니다.</div>';return}
+  rows.sort((a,b)=>b.apy-a.apy).forEach(r=>{const c=document.createElement('div');c.className='apy';
+    const k=document.createElement('div');k.className='k';k.textContent=r.venue+' · '+r.coin;
+    const v=document.createElement('div');v.className='v n';v.textContent=r.apy.toFixed(2)+'%';
+    const s2=document.createElement('div');s2.className='s';s2.textContent=r.product+' · '+r.note;
+    c.append(k,v,s2);g.append(c)});
+  if(y.fetchedAt)$('apyTime').textContent=new Date(y.fetchedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' 기준';
 }
 function renderAll(){const list=readAll();renderVerdict(list);renderLog(list);renderCharts()}
 
@@ -336,7 +410,8 @@ async function load(){
   if(busy||!mcp)return;busy=true;$('refresh').disabled=true;$('statusText').textContent='불러오는 중…';
   try{
     const [liq,m2,dxy,y10,tvl]=await Promise.all([get('/api/liquidity',LIQ_ALT),get('/api/macro?series=m2'),get('/api/macro?series=dxy'),get('/api/macro?series=y10'),get('/api/market?source=tvl')]);
-    if(liq){S.d.net=rowsOf(liq.net);S.d.tga=rowsOf(liq.tga);S.d.rrp=rowsOf(liq.rrp);S.d.stable=rowsOf(liq.stablecoins)}
+    get('/api/yields').then(renderApy).catch(()=>renderApy(null));
+    if(liq){S.d.walcl=rowsOf(liq.walcl);S.d.net=rowsOf(liq.net);S.d.tga=rowsOf(liq.tga);S.d.rrp=rowsOf(liq.rrp);S.d.stable=rowsOf(liq.stablecoins)}
     if(m2)S.d.m2=rowsOf(m2.rows);if(dxy)S.d.dxy=rowsOf(dxy.rows);if(y10)S.d.y10=rowsOf(y10.rows);
     if(tvl)S.d.tvl=(tvl.data||[]).filter(r=>r.tvl>0).map(r=>({t:r.date*1000,v:r.tvl}));
     const ok=[liq,m2,dxy,y10,tvl].filter(Boolean).length;
@@ -349,6 +424,7 @@ async function load(){
   }finally{busy=false;$('refresh').disabled=false}
 }
 
+$('mainRange').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.range=+b.dataset.d;[...$('mainRange').children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderCharts()});
 $('mainTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.main=b.dataset.k;[...$('mainTabs').children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderCharts()});
 $('refresh').addEventListener('click',load);
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(Object.keys(S.d).length)renderCharts()},150)});

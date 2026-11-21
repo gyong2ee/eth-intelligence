@@ -8,7 +8,7 @@
  ];
  var SECTIONS={
   '/derivatives.html':[['한눈에 보기','summary'],['미결제약정 추이','oi'],['가격과 미결제약정 흐름','flow'],['펀딩비 수준','funding'],['Binance 펀딩비','binance'],['Bybit 미결제약정','bybit'],['데이터 소스','sources']],
-  '/liquidity.html':[['지금 판정','verdict-sec'],['지표 8개','instruments'],['순유동성 · M2 · 스테이블','main'],['재무부 통장 TGA','tga'],['역레포','rrp'],['달러 인덱스','dxy'],['미국 10년물','y10'],['DeFi 예치금','tvl']]
+  '/liquidity.html':[['지금 판정','verdict-sec'],['지표 8개','instruments'],['순유동성 · 스테이블 · DeFi','main'],['스테이블코인 예치 APY','apy'],['재무부 통장 TGA','tga'],['역레포','rrp'],['달러 인덱스','dxy'],['미국 10년물','y10'],['DeFi 예치금','tvl']]
  };
  var ETH='<svg width="18" height="27" viewBox="0 0 24 36" aria-hidden="true"><path d="M12 1L1 18l11-5.2L23 18 12 1Z"/><path d="M1 20.5 12 35l11-14.5-11 6.3L1 20.5Z"/><path d="M1 18 12 12.8V25L1 18Z" opacity=".7"/><path d="M23 18 12 12.8V25l11-7Z" opacity=".45"/></svg>';
  var path=location.pathname.replace(/\/+$/,'')||'/';

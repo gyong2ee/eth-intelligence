@@ -89,3 +89,12 @@ body>main>nav,main>nav{gap:24px}
 .xc-tip{font:500 13px/1.5 Inter,"Noto Sans KR",sans-serif;color:var(--text);min-height:1.5em;margin:6px 0 0}
 .xc-empty{color:var(--soft);font-size:13px;padding:40px 0;text-align:center}
 .macroRanges button.on,.macroRanges button[aria-pressed="true"]{border-color:var(--brass)!important;color:var(--brass)!important}
+
+/* ETH staking APR cards, beside the staking ratio */
+.staking-apy{margin:6px 0 16px}
+.staking-apy .sa-title{display:block;font-size:13px;color:var(--soft);margin-bottom:8px}
+.sa-row{display:flex;gap:10px;flex-wrap:wrap}
+.sa-card{min-width:150px;padding:12px 14px;border:1px solid var(--rule);border-radius:14px;background:var(--paper2);display:grid;gap:2px}
+.sa-card b{font:600 22px/1.2 Inter,"Noto Sans KR",sans-serif;letter-spacing:-.02em;color:var(--text)}
+.sa-card .sa-note{font-size:11.5px;color:var(--dim)!important}
+.sa-empty{font-size:13px;color:var(--soft)}

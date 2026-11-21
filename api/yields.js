@@ -50,6 +50,7 @@ async function lido(){
  return {name:'Lido stETH',apr:+v.toFixed(2),note:'최근 7일 평균 APR'};
 }
 module.exports=async function(req,res){
+ poolsPromise=null; // fresh DefiLlama fetch per request; the CDN cache above handles reuse
  const stableJobs={'OKX USDT':okx('USDT'),'OKX USDC':okx('USDC'),'Bybit USDT':bybit('USDT'),'Bybit USDC':bybit('USDC'),'Aave v3':aave()};
  const stakeJobs={'Lido':lido(),'DefiLlama LST':liquidStaking()};
  const all=await Promise.allSettled([...Object.values(stableJobs),...Object.values(stakeJobs)]);
