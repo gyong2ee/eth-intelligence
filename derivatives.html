@@ -1,5 +1,15 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}section[id]{scroll-margin-top:16px}
-</style><link rel="stylesheet" href="/nav.css"><script src="/nav.js" defer></script><title>ETH 파생상품</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}.seg-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:rgba(236,230,214,.05)}
+.seg button{border:0!important;padding:5px 12px;font-size:12.5px}
+.seg button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;font-weight:600}
+.tag-est{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:rgba(224,164,74,.16);color:var(--accent);vertical-align:3px;margin-left:6px}
+.legend-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.legend-row i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend-row i.dash{width:12px;height:0;border-top:2px dashed var(--fg);border-radius:0;vertical-align:3px}
+#oiLong .note,#liqmap .note{margin:6px 0 0}
+#liqmap a{color:var(--accent)}
+section[id]{scroll-margin-top:16px}
+</style><link rel="stylesheet" href="/nav.css"><script src="/nav.js" defer></script><script src="/deriv-ext.js" defer></script><title>ETH 파생상품</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Inter:wght@500;600;700&display=swap">
@@ -148,6 +158,29 @@ svg text{font-family:var(--f-body)}
       <div><span class="label">기록 범위</span><b id="sRange">—</b></div>
       <div><span class="label">OI (ETH 환산)</span><b id="sEth">—</b></div>
     </div>
+  </section>
+
+  <section class="panel" id="oiLong">
+    <div class="panel-head">
+      <h2>미결제약정 장기 추이</h2>
+      <div class="seg-row"><div class="seg" id="oiLongSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div>
+      <div class="seg" id="oiLongRange"><button type="button" data-v="90" aria-pressed="false">3M</button><button type="button" data-v="365" aria-pressed="true">1Y</button><button type="button" data-v="0" aria-pressed="false">전체</button></div></div>
+    </div>
+    <div class="chart-wrap" id="oiLongChart"><div class="empty">불러오는 중</div></div>
+    <p class="note num" id="oiLongNote"></p>
+    <p class="note" id="oiLongStat"></p>
+    <p class="note">Bybit 무기한 선물 일별 미결제약정(달러 환산). 한 거래소 기준이라 전체 시장 합계보다 작습니다.</p>
+  </section>
+
+  <section class="panel" id="liqmap">
+    <div class="panel-head">
+      <h2>청산맵 <span class="tag-est">추정</span></h2>
+      <div class="seg-row"><div class="seg" id="liqSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div><span class="note" id="liqTime"></span></div>
+    </div>
+    <div class="legend-row"><span><i style="background:var(--down)"></i>롱 청산 (가격이 내려가면)</span><span><i style="background:var(--up)"></i>숏 청산 (가격이 올라가면)</span><span><i class="dash"></i>현재가</span></div>
+    <div class="chart-wrap" id="liqChart"><div class="empty">계산 중</div></div>
+    <p class="note num" id="liqNote"></p>
+    <p class="note">최근 30일 Bybit 시간별 미결제약정 증가분을 그 시점 가격에 새 포지션이 생긴 것으로 보고, 롱·숏 계정 비율과 10·25·50·100배 레버리지를 가정해 청산 가격을 쌓은 모델입니다. 이미 가격이 지나간 구간은 지웁니다. 실제 청산 데이터가 아닙니다. <a id="liqLink" href="https://www.coinglass.com/pro/futures/LiquidationHeatMap" target="_blank" rel="noopener noreferrer">Coinglass 실제 청산맵 보기 ↗</a></p>
   </section>
 
   <div class="two">
