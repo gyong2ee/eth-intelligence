@@ -147,8 +147,13 @@
    var dv=j.dvol||[];
    if(dv.length){var last=dv[dv.length-1],m30=dv.filter(function(x){return x.t<=last.t-30*DAY}).pop();var ch=m30?last.v-m30.v:null;
     card('내재변동성 DVOL',last.v.toFixed(1),'30일 '+(ch==null?'—':(ch>=0?'+':'')+ch.toFixed(1)+'p')+' · 시장이 예상하는 연간 변동 폭(%)','')}
-   var yr=dv.filter(function(x){return x.t>=dv[dv.length-1].t-365*DAY});
-   lineChart(box,[{name:optCur+' DVOL',color:'var(--accent)',pts:yr,fmt:function(v){return v.toFixed(1)}}],{label:optCur+' 내재변동성',fy:function(v){return v.toFixed(0)},fill:true});
+   var yr=dv.filter(function(x){return x.t>=dv[dv.length-1].t-365*DAY}),cur=optCur,sym=cur+'USDT';
+   var draw=function(px){if(cur!==optCur)return;
+    lineChart(box,[{name:cur+' DVOL',color:'var(--accent)',pts:yr,fmt:function(v){return v.toFixed(1)}},
+     {name:cur+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:px,fmt:function(v){return priceFmt(v,sym)}}],
+     {label:cur+' 내재변동성과 가격',h:260,fy:function(v){return v.toFixed(0)},fyR:function(v){return priceFmt(v,sym)},fill:true})};
+   // the coin's daily price comes from the open-interest history that the OI chart already loads
+   load('oi',sym).then(function(o){draw((o.rows||[]).filter(function(r){return r.t>=yr[0].t}).map(function(r){return {t:r.t,v:r.price}}))}).catch(function(){draw([])});
    document.getElementById('optTime').textContent=new Date(j.fetchedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' 기준';
   }).catch(function(e){box.innerHTML='<div class="empty">옵션 데이터를 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
  }

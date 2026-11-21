@@ -16,7 +16,8 @@ regions, so keep that setting.
 - Do not overlay unrelated series on one chart. Put them in separate charts on the same time
   window, side by side in a row. Exception the user asked for: open interest and the coin's
   price share one chart (OI area on the right axis, price line on the left axis), and the
-  long/short account ratio shares a chart with the coin's price (ratio left axis, price right).
+  long/short account ratio and DVOL each share a chart with the coin's price (indicator on the
+  left axis, price on the right).
 - Default range is **1Y** unless the chart is monthly macro data that needs a longer view.
 - Charts with a full-period navigator: drag inside to move, drag an edge to resize, click
   outside to jump there, wheel to zoom. Redraw in place on wheel/drag (no rebuild, no animation).
