@@ -12,7 +12,8 @@ regions, so keep that setting.
 - When a chart shows more than one series, the tooltip lists every series on its own row with a
   color dot matching its line, so the values are easy to tell apart.
 - Do not overlay unrelated series on one chart. Put them in separate charts on the same time
-  window, side by side in a row.
+  window, side by side in a row. Exception the user asked for: open interest and the coin's
+  price share one chart (OI area on the right axis, price line on the left axis).
 - Default range is **1Y** unless the chart is monthly macro data that needs a longer view.
 - Charts with a full-period navigator: drag inside to move, drag an edge to resize, click
   outside to jump there, wheel to zoom. Redraw in place on wheel/drag (no rebuild, no animation).

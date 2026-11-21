@@ -21,28 +21,26 @@
    var rows=j.rows||[];if(rows.length<2)throw Error('기록 없음');
    var end=rows[rows.length-1].t,pts=oiState.days?rows.filter(function(r){return r.t>=end-oiState.days*DAY}):rows;
    if(pts.length<2)pts=rows;
-   // two stacked panels on one time axis: open interest (USD) on top, the coin's price below
-   var W=Math.max(280,box.clientWidth||700),H=330,m={l:8,r:64,t:12,b:24},gap=18,priceH=78;
-   var oiTop=m.t,oiBot=H-m.b-priceH-gap,pTop=oiBot+gap,pBot=H-m.b;
+   // open interest (area, right axis) and the coin's price (line, left axis) on one chart
+   var W=Math.max(280,box.clientWidth||700),H=290,m={l:64,r:64,t:14,b:24};
    var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':j.unit+' 미결제약정과 가격 추이'});
    var t0=pts[0].t,t1=pts[pts.length-1].t,X=function(t){return m.l+(t-t0)/(t1-t0)*(W-m.l-m.r)};
-   function scale(vals,top,bot,floor0){var lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals),pad=(hi-lo)*.08||hi*.05;lo=floor0?Math.max(0,lo-pad):lo-pad;hi+=pad;return {lo:lo,hi:hi,Y:function(v){return top+(1-(v-lo)/(hi-lo))*(bot-top)}}}
-   var A=scale(pts.map(function(p){return p.usd}),oiTop,oiBot,true),P=scale(pts.map(function(p){return p.price}),pTop,pBot,false);
+   function scale(vals,floor0){var lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals),pad=(hi-lo)*.08||hi*.05;lo=floor0?Math.max(0,lo-pad):lo-pad;hi+=pad;return {lo:lo,hi:hi,Y:function(v){return m.t+(1-(v-lo)/(hi-lo))*(H-m.t-m.b)}}}
+   var A=scale(pts.map(function(p){return p.usd}),true),P=scale(pts.map(function(p){return p.price}),false);
    var st=niceStep((A.hi-A.lo)/4);
-   for(var g=Math.ceil(A.lo/st)*st;g<=A.hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:A.Y(g),y2:A.Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,A.Y(g)+4,usd(g)))}
-   svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:pTop-gap/2,y2:pTop-gap/2,stroke:'var(--line)'}));
-   svg.appendChild(txt(W-m.r+8,P.Y(P.hi)+10,priceFmt(P.hi,oiState.sym),{'font-size':10.5}));svg.appendChild(txt(W-m.r+8,P.Y(P.lo),priceFmt(P.lo,oiState.sym),{'font-size':10.5}));
-   svg.appendChild(txt(m.l+2,oiTop+12,'미결제약정',{fill:'var(--accent)','font-size':11}));svg.appendChild(txt(m.l+2,pTop+12,j.unit+' 가격',{fill:'var(--fg)','font-size':11}));
+   for(var g=Math.ceil(A.lo/st)*st;g<=A.hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:A.Y(g),y2:A.Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,A.Y(g)+4,usd(g),{fill:'var(--accent)'}))}
+   var ps=niceStep((P.hi-P.lo)/4);
+   for(var q=Math.ceil(P.lo/ps)*ps;q<=P.hi;q+=ps){svg.appendChild(txt(m.l-8,P.Y(q)+4,priceFmt(q,oiState.sym),{'text-anchor':'end',fill:'var(--fg)','fill-opacity':.75}))}
    var n=W<480?3:5;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
    var path='';pts.forEach(function(p,i){path+=(i?'L':'M')+X(p.t).toFixed(1)+' '+A.Y(p.usd).toFixed(1)});
-   svg.appendChild(el('path',{d:path+'L'+X(t1)+' '+oiBot+'L'+X(t0)+' '+oiBot+'Z',fill:'var(--accent)','fill-opacity':.10}));
+   svg.appendChild(el('path',{d:path+'L'+X(t1)+' '+(H-m.b)+'L'+X(t0)+' '+(H-m.b)+'Z',fill:'var(--accent)','fill-opacity':.12}));
    svg.appendChild(el('path',{d:path,fill:'none',stroke:'var(--accent)','stroke-width':2,'stroke-linejoin':'round'}));
    var pp='';pts.forEach(function(p,i){pp+=(i?'L':'M')+X(p.t).toFixed(1)+' '+P.Y(p.price).toFixed(1)});
-   svg.appendChild(el('path',{d:pp,fill:'none',stroke:'var(--fg)','stroke-opacity':.8,'stroke-width':1.4,'stroke-linejoin':'round'}));
+   svg.appendChild(el('path',{d:pp,fill:'none',stroke:'var(--fg)','stroke-opacity':.85,'stroke-width':1.5,'stroke-linejoin':'round'}));
    var last=pts[pts.length-1];
    box.innerHTML='';box.appendChild(svg);
    var unit=j.unit,byT=new Map(pts.map(function(p){return [p.t,p]}));
-   if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:oiTop,bottom:pBot,tAt:function(sx){return t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0)},date:ETHTrack.ymd,
+   if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:function(sx){return t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0)},date:ETHTrack.ymd,
     series:[
      {name:'미결제약정',color:'var(--accent)',pts:pts.map(function(p){return {t:p.t,v:p.usd}}),x:X,y:A.Y,fmt:function(v){return usd(v)}},
      {name:unit+' 환산',color:'var(--accent)',pts:pts.map(function(p){return {t:p.t,v:p.oi}}),x:X,y:function(){return -50},fmt:function(v){return Math.round(v).toLocaleString('en-US')+' '+unit}},

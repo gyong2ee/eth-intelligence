@@ -7,6 +7,9 @@
 .legend-row i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .legend-row i.dash{width:12px;height:0;border-top:2px dashed var(--fg);border-radius:0;vertical-align:3px}
 #oiLong .note,#liqmap .note{margin:6px 0 0}
+/* redundant with the long open-interest chart */
+#oi,#bybit{display:none!important}
+#binance{grid-column:1/-1}
 #liqmap a{color:var(--accent)}
 section[id]{scroll-margin-top:16px}
 #liqChart{position:relative}
@@ -167,10 +170,11 @@ svg text{font-family:var(--f-body)}
 
   <section class="panel" id="oiLong">
     <div class="panel-head">
-      <h2>미결제약정 장기 추이</h2>
+      <h2>미결제약정 추이</h2>
       <div class="seg-row"><div class="seg" id="oiLongSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div>
       <div class="seg" id="oiLongRange"><button type="button" data-v="90" aria-pressed="false">3M</button><button type="button" data-v="365" aria-pressed="true">1Y</button><button type="button" data-v="0" aria-pressed="false">전체</button></div></div>
     </div>
+    <div class="legend-row"><span><i style="background:var(--accent)"></i>미결제약정 (오른쪽 축)</span><span><i class="dash" style="border-top-style:solid"></i>가격 (왼쪽 축)</span></div>
     <div class="chart-wrap" id="oiLongChart"><div class="empty">불러오는 중</div></div>
     <p class="note num" id="oiLongNote"></p>
     <p class="note" id="oiLongStat"></p>
