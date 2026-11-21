@@ -159,7 +159,7 @@
  function navChart(box,series,o,st){
   series=series.filter(function(s){return s.pts&&s.pts.length>1});
   if(!series.length){box.innerHTML='<div class="empty">기록을 받지 못했습니다.</div>';return}
-  var full=series[0].pts,T0=Infinity,T1=-Infinity;series.forEach(function(s){T0=Math.min(T0,s.pts[0].t);T1=Math.max(T1,s.pts[s.pts.length-1].t)});
+  var full=o.navPts||series[0].pts,T0=Infinity,T1=-Infinity;series.forEach(function(s){T0=Math.min(T0,s.pts[0].t);T1=Math.max(T1,s.pts[s.pts.length-1].t)});
   var minSpan=30*DAY;
   if(!(st.a<st.b)||st.reset){st.b=T1;st.a=st.days>0?Math.max(T0,T1-st.days*DAY):T0;st.reset=false}
   box.innerHTML='';var main=document.createElement('div');main.className='nc-main';
@@ -181,7 +181,7 @@
    [a,b].forEach(function(x){nav.appendChild(el('rect',{x:x-2.5,y:H/2-8,width:5,height:16,rx:2,fill:'#c9a45c'}))});
    navGeo={W:W,X:X,a:a,b:b};lab.lastChild.textContent=ETHTrack.ymd(st.a)+' ~ '+ETHTrack.ymd(st.b);
   }
-  function draw(){lineChart(main,series.map(function(s){return Object.assign({},s,{pts:cut(s.pts)})}),o);drawNav();if(o.onWindow)o.onWindow(st)}
+  function draw(){(o.render||lineChart)(main,series.map(function(s){return Object.assign({},s,{pts:cut(s.pts)})}),o);drawNav();if(o.onWindow)o.onWindow(st)}
   function manual(){st.days=-1;if(o.onManual)o.onManual()}
   function zoomAt(ratio,dy){var span=st.b-st.a,k=Math.exp(dy*.0015),ns=Math.max(minSpan,Math.min(T1-T0,span*k)),c=st.a+span*ratio;clamp(c-ns*ratio,c+ns*(1-ratio));manual();draw()}
   function wd(e){return e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?120:1)}
@@ -202,6 +202,61 @@
   main.addEventListener('pointermove',function(e){if(!drag||drag.el!==main)return;var dt=-(e.clientX-drag.x)/drag.w*(drag.b-drag.a);clamp(drag.a+dt,drag.b+dt);manual();draw()});
   main.addEventListener('pointerup',end);main.addEventListener('pointercancel',end);
   draw();
+ }
+
+
+ /* ---------- mirrored daily bars: longs up, shorts down (liquidations) ---------- */
+ function barChart(box,series,o){
+  var up=series[0],dn=series[1];
+  if(!up||up.pts.length<2){box.innerHTML='<div class="empty">기록을 받지 못했습니다.</div>';return}
+  var W=Math.max(280,box.clientWidth||700),H=o.h||260,m={l:8,r:64,t:12,b:24};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':o.label});
+  var t0=up.pts[0].t,t1=up.pts[up.pts.length-1].t,plotW=W-m.l-m.r;
+  var X=function(t){return m.l+(t-t0)/((t1-t0)||1)*plotW};
+  var maxU=Math.max.apply(null,up.pts.map(function(p){return p.v}))||1,maxD=Math.max.apply(null,dn.pts.map(function(p){return p.v}))||1;
+  (o.hlines||[]).forEach(function(h){maxU=Math.max(maxU,h.v)});
+  var span=(maxU+maxD)*1.08,zero=m.t+(maxU*1.04)/span*(H-m.t-m.b),k=(H-m.t-m.b)/span;
+  var YU=function(v){return zero-v*k},YD=function(v){return zero+v*k};
+  var st=niceStep(Math.max(maxU,maxD)/3);
+  for(var g=st;g<=maxU*1.04;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:YU(g),y2:YU(g),stroke:'var(--line)','stroke-opacity':.5}));svg.appendChild(txt(W-m.r+8,YU(g)+4,usd(g)))}
+  for(g=st;g<=maxD*1.04;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:YD(g),y2:YD(g),stroke:'var(--line)','stroke-opacity':.5}));svg.appendChild(txt(W-m.r+8,YD(g)+4,usd(g)))}
+  svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:zero,y2:zero,stroke:'var(--muted)','stroke-opacity':.7}));
+  var bw=Math.max(1,Math.min(10,plotW/up.pts.length*.7));
+  up.pts.forEach(function(p){if(p.v>0)svg.appendChild(el('rect',{x:X(p.t)-bw/2,y:YU(p.v),width:bw,height:Math.max(.5,zero-YU(p.v)),fill:up.color,'fill-opacity':.85}))});
+  dn.pts.forEach(function(p){if(p.v>0)svg.appendChild(el('rect',{x:X(p.t)-bw/2,y:zero,width:bw,height:Math.max(.5,YD(p.v)-zero),fill:dn.color,'fill-opacity':.85}))});
+  (o.hlines||[]).forEach(function(h){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:YU(h.v),y2:YU(h.v),stroke:'var(--muted)','stroke-dasharray':'5 4'}));svg.appendChild(txt(m.l+6,YU(h.v)-5,h.label,{'font-size':10.5}))});
+  var n=W<480?3:5,shortSpan=(t1-t0)<120*DAY;for(var i=0;i<n;i++){var t=t0+(t1-t0)*i/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,shortSpan?(d.getUTCMonth()+1)+'/'+d.getUTCDate():(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':i===0?'start':i===n-1?'end':'middle'}))}
+  box.innerHTML='';box.appendChild(svg);
+  var tot=up.pts.map(function(p,i){return {t:p.t,v:p.v+((dn.pts[i]||{}).v||0)}});
+  if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:function(sx){return t0+(sx-m.l)/plotW*(t1-t0)},date:ETHTrack.ymd,
+   series:[{name:up.name,color:up.color,pts:up.pts,x:X,y:YU,fmt:usd},{name:dn.name,color:dn.color,pts:dn.pts,x:X,y:YD,fmt:usd},{name:'합계',color:'var(--fg)',pts:tot,x:X,y:function(){return -50},fmt:usd}]});
+ }
+
+ /* ---------- real liquidations (Coinalyze) ---------- */
+ var lqhCoin='ETH',lqhWin={days:365,reset:true},lqhCache={};
+ function drawLqh(){
+  var box=document.getElementById('lqhChart'),coin=lqhCoin;box.innerHTML='<div class="empty">불러오는 중</div>';
+  var p=lqhCache[coin]||(lqhCache[coin]=fetch('/api/deriv?src=liqhist&coin='+coin).then(function(r){return r.json().then(function(j){if(!r.ok){var e=Error(j.error||('HTTP '+r.status));e.needsKey=j.needsKey;throw e}return j})}));
+  p.catch(function(){delete lqhCache[coin]});
+  p.then(function(j){
+   if(coin!==lqhCoin)return;
+   var rows=j.rows||[],end=rows[rows.length-1].t,yr=rows.filter(function(r){return r.t>end-365*DAY});
+   var tots=yr.map(function(r){return r.long+r.short}).sort(function(a,b){return a-b}),q90=tots[Math.floor(.9*(tots.length-1))];
+   var last=rows[rows.length-1],lt=last.long+last.short,rank=tots.filter(function(v){return v<=lt}).length/tots.length*100;
+   var big=yr.reduce(function(a,r){return r.long+r.short>a.long+a.short?r:a},yr[0]);
+   var cards=document.getElementById('lqhCards');cards.innerHTML='';
+   var card=function(k,v,sub,cls){var d=document.createElement('div');d.className='opt-card';var a=document.createElement('span');a.className='label';a.textContent=k;var b=document.createElement('b');b.className='num'+(cls?' '+cls:'');b.textContent=v;var c=document.createElement('span');c.className='note';c.textContent=sub;d.append(a,b,c);cards.appendChild(d)};
+   var side=last.long>=last.short?'롱 '+Math.round(last.long/(lt||1)*100)+'%':'숏 '+Math.round(last.short/(lt||1)*100)+'%';
+   card('최근 하루 청산',usd(lt),ETHTrack.ymd(last.t)+' · 롱 '+usd(last.long)+' · 숏 '+usd(last.short),'');
+   card('1년 중 위치',rank>=50?'상위 '+Math.max(1,Math.round(100-rank))+'%':'하위 '+Math.max(1,Math.round(rank))+'%',(rank>=90?'크게 터진 날 · ':'')+side+' 쪽이 더 많이 청산',rank>=90?'down':'');
+   card('1년 최대 청산일',usd(big.long+big.short),ETHTrack.ymd(big.t)+' · '+(big.long>=big.short?'롱':'숏')+' 청산 위주','');
+   navChart(box,[
+    {name:'롱 청산',color:'var(--down)',pts:rows.map(function(r){return {t:r.t,v:r.long}})},
+    {name:'숏 청산',color:'var(--up)',pts:rows.map(function(r){return {t:r.t,v:r.short}})}
+   ],{label:coin+' 일별 청산량',h:280,render:barChart,navPts:rows.map(function(r){return {t:r.t,v:r.long+r.short}}),hlines:[{v:q90,label:'상위 10%'}],
+    onManual:function(){[].forEach.call(document.getElementById('lqhRange').children,function(x){x.setAttribute('aria-pressed','false')})}},lqhWin);
+   document.getElementById('lqhSrc').textContent='출처: '+j.source+' ('+j.markets+'개 시장'+(j.exchanges&&j.exchanges.length?' · 1년 비중 큰 곳 '+j.exchanges.slice(0,4).map(function(e){return e.name}).join(', '):'')+')';
+  }).catch(function(e){box.innerHTML='<div class="empty">'+(e.needsKey?'Coinalyze 키를 연결하면 표시됩니다.':'청산 기록을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')')+'</div>';document.getElementById('lqhCards').innerHTML=''});
  }
 
  /* ---------- options (Deribit) ---------- */
@@ -287,9 +342,10 @@
   seg('liqSym',function(v){liqSym=v;drawLiq()});
   if(document.getElementById('optChart')){seg('optCur',function(v){optCur=v;drawOpt()});drawOpt()}
   if(document.getElementById('lsChart')){seg('lsSym',function(v){lsSym=v;drawLS()});drawLS()}
+  if(document.getElementById('lqhChart')){seg('lqhSym',function(v){lqhCoin=v;lqhWin.reset=true;drawLqh()});seg('lqhRange',function(v){lqhWin.days=+v;lqhWin.reset=true;drawLqh()});drawLqh()}
   if(document.getElementById('levChart')){seg('levSym',function(v){levSym=v;levWin.reset=true;drawLev()});seg('levRange',function(v){levWin.days=+v;levWin.reset=true;drawLev()});drawLev()}
   drawOI();drawLiq();
-  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq();if(document.getElementById('optChart'))drawOpt();if(document.getElementById('lsChart'))drawLS();if(document.getElementById('levChart'))drawLev()},200)});
+  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq();if(document.getElementById('optChart'))drawOpt();if(document.getElementById('lsChart'))drawLS();if(document.getElementById('levChart'))drawLev();if(document.getElementById('lqhChart'))drawLqh()},200)});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

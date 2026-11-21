@@ -212,6 +212,17 @@ svg text{font-family:var(--f-body)}
     <p class="note">시장 크기 대비 선물 레버리지가 얼마나 쌓였는지 보는 지표입니다. 빨간 점선 위(1년 중 상위 10%)는 레버리지가 과하게 쌓인 구간이라 한쪽으로 쏠린 포지션이 연쇄 청산되며 크게 움직이기 쉽습니다. 초록 점선 아래는 레버리지가 정리된 구간입니다. 추이는 Bybit 미결제약정 기준이고, 첫 번째 카드만 6개 시장 합계입니다. <span id="levSrc"></span></p>
   </section>
 
+  <section class="panel" id="liqhist">
+    <div class="panel-head">
+      <h2>실제 청산량 · 일별</h2>
+      <div class="seg-row"><div class="seg" id="lqhSym"><button type="button" data-v="ETH" aria-pressed="true">ETH</button><button type="button" data-v="BTC" aria-pressed="false">BTC</button></div><div class="seg" id="lqhRange"><button type="button" data-v="90" aria-pressed="false">3M</button><button type="button" data-v="180" aria-pressed="false">6M</button><button type="button" data-v="365" aria-pressed="true">1Y</button><button type="button" data-v="0" aria-pressed="false">전체</button></div></div>
+    </div>
+    <div class="opt-cards" id="lqhCards"></div>
+    <div class="legend-row"><span><i style="background:var(--down)"></i>롱 청산 (위쪽)</span><span><i style="background:var(--up)"></i>숏 청산 (아래쪽)</span><span><i class="dash" style="border-top-color:var(--muted)"></i>1년 상위 10% (하루 합계)</span></div>
+    <div class="chart-wrap" id="lqhChart"><div class="empty">불러오는 중</div></div>
+    <p class="note">하루 동안 강제로 정리된 포지션 금액입니다. 롱 청산이 크게 튀면 롱 쪽이 털린 날, 숏 청산이 크게 튀면 숏 쪽이 털린 날입니다. 쏠린 쪽이 한 번에 털린 날은 단기 바닥·꼭지가 되는 경우가 많습니다. 거래소들이 청산 내역을 일부만 공개해서(Binance는 1초에 종목당 1건) 실제보다 적게 잡히므로, 금액 자체보다 평소 대비 크기로 보세요. <span id="lqhSrc"></span></p>
+  </section>
+
   <section class="panel" id="liqmap">
     <div class="panel-head">
       <h2>청산맵 <span class="tag-est">추정</span></h2>
