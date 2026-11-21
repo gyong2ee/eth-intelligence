@@ -10,7 +10,7 @@ async function fetchText(url,ms=12000){
  return r.text();
 }
 const since=()=>{const d=new Date();d.setUTCFullYear(d.getUTCFullYear()-YEARS);return d.toISOString().slice(0,10)};
-const clean=rows=>[...new Map(rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&Number.isFinite(r.value)).map(r=>[r.date,r])).values()].sort((a,b)=>a.date.localeCompare(b.date));
+const clean=rows=>[...new Map(rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&Number.isFinite(r.value)).map(r=>[r.date,{date:r.date,value:Math.round(r.value*100)/100}])).values()].sort((a,b)=>a.date.localeCompare(b.date));
 
 // FRED CSV first, DBnomics mirror second. scale converts the series' unit to billions.
 async function fred(id,scale){
@@ -63,7 +63,7 @@ async function stablecoins(){
 // Net liquidity = Fed assets - TGA - RRP, sampled on Fed balance sheet dates (weekly).
 function netLiquidity(walcl,tga,rrp){
  const at=(rows,date)=>{let a=null;for(const r of rows){if(r.date<=date)a=r;else break}return a};
- return walcl.map(w=>{const t=at(tga,w.date),r=at(rrp,w.date);return t&&r?{date:w.date,value:w.value-t.value-r.value}:null}).filter(Boolean);
+ return walcl.map(w=>{const t=at(tga,w.date),r=at(rrp,w.date);return t&&r?{date:w.date,value:Math.round((w.value-t.value-r.value)*100)/100}:null}).filter(Boolean);
 }
 
 module.exports=async function(req,res){
