@@ -85,7 +85,7 @@ window.ETHTrack=(function(){
    var t=o.tAt(sx),rows=[],first=null;
    o.series.forEach(function(s,i){if(!s.pts||!s.pts.length){marks[i].setAttribute('visibility','hidden');return}var p=near(s.pts,t);if(!first)first=p;
     if(dots){marks[i].setAttribute('cx',s.x(p.t));marks[i].setAttribute('cy',s.y(p.v));marks[i].setAttribute('visibility','visible')}
-    rows.push({name:s.name,color:s.color,value:s.fmt(p.v)})});
+    rows.push({name:s.name,color:s.color,value:s.fmt(p.v,p)})});
    if(!first)return;var cx=o.series[0].x(first.t);cross.setAttribute('x1',cx);cross.setAttribute('x2',cx);cross.setAttribute('visibility','visible');
    tt.show(e.clientX,e.clientY,o.date(first.t),rows);
   }

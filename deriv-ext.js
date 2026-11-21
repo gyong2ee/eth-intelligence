@@ -12,6 +12,23 @@
  function load(kind,sym){var key=kind+sym;if(!cache[key])cache[key]=fetch('/api/deriv?src=bybit&kind='+kind+'&symbol='+sym,{headers:{Accept:'application/json'}}).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||('HTTP '+r.status));return j})});cache[key].catch(function(){delete cache[key]});return cache[key]}
  function seg(id,onPick){var box=document.getElementById(id);box.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(box.children,function(x){x.setAttribute('aria-pressed',String(x===b))});onPick(b.dataset.v)})}
 
+
+ /* ---------- daily candles for the coin price (weekly when too dense to read) ---------- */
+ var UPC='#6fbfa8',DNC='#e2735c';
+ function candlePts(rows){return rows.filter(function(r){return r.h>0&&r.l>0&&r.o>0}).map(function(r){return {t:r.t,v:r.price!=null?r.price:r.v,o:r.o,h:r.h,l:r.l}})}
+ function drawCandles(svg,pts,X,Y,plotW){
+  if(!pts.length)return {bars:pts,weekly:false};var bars=pts,weekly=false;
+  if(plotW/pts.length<3){var wk=new Map();pts.forEach(function(p){var k=Math.floor((p.t/DAY+3)/7),b=wk.get(k);if(!b)wk.set(k,{t:p.t,o:p.o,h:p.h,l:p.l,v:p.v,t1:p.t});else{b.h=Math.max(b.h,p.h);b.l=Math.min(b.l,p.l);b.v=p.v;b.t1=p.t}});
+   bars=[...wk.values()].map(function(b){return {t:(b.t+b.t1)/2,o:b.o,h:b.h,l:b.l,v:b.v}});weekly=true}
+  var step=bars.length>1?(X(bars[bars.length-1].t)-X(bars[0].t))/(bars.length-1):plotW,bw=Math.max(1,Math.min(10,step*.62));
+  var g=el('g',{'pointer-events':'none'});
+  bars.forEach(function(b){var up=b.v>=b.o,c=up?UPC:DNC,x=X(b.t),y1=Y(Math.max(b.o,b.v)),y2=Y(Math.min(b.o,b.v));
+   g.appendChild(el('line',{x1:x,x2:x,y1:Y(b.h),y2:Y(b.l),stroke:c,'stroke-width':1,'stroke-opacity':.8}));
+   g.appendChild(el('rect',{x:x-bw/2,y:y1,width:bw,height:Math.max(1,y2-y1),fill:c,'fill-opacity':.8}))});
+  svg.appendChild(g);return {bars:bars,weekly:weekly};
+ }
+ function candleFmt(sym){return function(v,p){var f=function(x){return priceFmt(x,sym)};return p&&p.h?'종가 '+f(v)+' · 고 '+f(p.h)+' · 저 '+f(p.l):f(v)}}
+
  /* ---------- open interest history ---------- */
  var oiState={sym:'ETHUSDT',days:365};
  function drawOI(){
@@ -26,7 +43,7 @@
    var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':j.unit+' 미결제약정과 가격 추이'});
    var t0=pts[0].t,t1=pts[pts.length-1].t,X=function(t){return m.l+(t-t0)/(t1-t0)*(W-m.l-m.r)};
    function scale(vals,floor0){var lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals),pad=(hi-lo)*.08||hi*.05;lo=floor0?Math.max(0,lo-pad):lo-pad;hi+=pad;return {lo:lo,hi:hi,Y:function(v){return m.t+(1-(v-lo)/(hi-lo))*(H-m.t-m.b)}}}
-   var A=scale(pts.map(function(p){return p.usd}),true),P=scale(pts.map(function(p){return p.price}),false);
+   var A=scale(pts.map(function(p){return p.usd}),true),P=scale([].concat.apply([],pts.map(function(p){return [p.price,p.h||p.price,p.l||p.price]})),false);
    var st=niceStep((A.hi-A.lo)/4);
    for(var g=Math.ceil(A.lo/st)*st;g<=A.hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:A.Y(g),y2:A.Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,A.Y(g)+4,usd(g),{fill:'var(--accent)'}))}
    var ps=niceStep((P.hi-P.lo)/4);
@@ -35,8 +52,8 @@
    var path='';pts.forEach(function(p,i){path+=(i?'L':'M')+X(p.t).toFixed(1)+' '+A.Y(p.usd).toFixed(1)});
    svg.appendChild(el('path',{d:path+'L'+X(t1)+' '+(H-m.b)+'L'+X(t0)+' '+(H-m.b)+'Z',fill:'var(--accent)','fill-opacity':.12}));
    svg.appendChild(el('path',{d:path,fill:'none',stroke:'var(--accent)','stroke-width':2,'stroke-linejoin':'round'}));
-   var pp='';pts.forEach(function(p,i){pp+=(i?'L':'M')+X(p.t).toFixed(1)+' '+P.Y(p.price).toFixed(1)});
-   svg.appendChild(el('path',{d:pp,fill:'none',stroke:'var(--fg)','stroke-opacity':.85,'stroke-width':1.5,'stroke-linejoin':'round'}));
+   var cp=candlePts(pts),cd=null;if(cp.length>pts.length/2)cd=drawCandles(svg,cp,X,P.Y,W-m.l-m.r);
+   else{var pp='';pts.forEach(function(p,i){pp+=(i?'L':'M')+X(p.t).toFixed(1)+' '+P.Y(p.price).toFixed(1)});svg.appendChild(el('path',{d:pp,fill:'none',stroke:'var(--fg)','stroke-opacity':.85,'stroke-width':1.5,'stroke-linejoin':'round'}))}
    var last=pts[pts.length-1];
    box.innerHTML='';box.appendChild(svg);
    var unit=j.unit,byT=new Map(pts.map(function(p){return [p.t,p]}));
@@ -44,7 +61,7 @@
     series:[
      {name:'미결제약정',color:'var(--accent)',pts:pts.map(function(p){return {t:p.t,v:p.usd}}),x:X,y:A.Y,fmt:function(v){return usd(v)}},
      {name:unit+' 환산',color:'var(--accent)',pts:pts.map(function(p){return {t:p.t,v:p.oi}}),x:X,y:function(){return -50},fmt:function(v){return Math.round(v).toLocaleString('en-US')+' '+unit}},
-     {name:unit+' 가격',color:'var(--fg)',pts:pts.map(function(p){return {t:p.t,v:p.price}}),x:X,y:P.Y,fmt:function(v){return priceFmt(v,oiState.sym)}}
+     {name:unit+' 가격'+(cd?(cd.weekly?' (주봉)':' (일봉)'):''),color:'var(--fg)',pts:cd?cd.bars:pts.map(function(p){return {t:p.t,v:p.price}}),x:X,y:P.Y,fmt:candleFmt(oiState.sym)}
     ]});
    note.textContent='최신 '+new Date(last.t).toISOString().slice(0,10)+' · 미결제약정 '+usd(last.usd)+' ('+Math.round(last.oi).toLocaleString('en-US')+' '+unit+') · 가격 '+priceFmt(last.price,oiState.sym);
    var first=pts[0],ch=(last.usd/first.usd-1)*100,pch=(last.price/first.price-1)*100;
@@ -113,7 +130,7 @@
   var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':o.label});
   var all=[];series.forEach(function(s){s.pts.forEach(function(p){all.push(p)})});
   var t0=Math.min.apply(null,all.map(function(p){return p.t})),t1=Math.max.apply(null,all.map(function(p){return p.t}));
-  function scale(side,base){var v=[];series.forEach(function(s){if((s.axis||'L')===side)s.pts.forEach(function(p){v.push(p.v)})});if(!v.length)return null;
+  function scale(side,base){var v=[];series.forEach(function(s){if((s.axis||'L')===side)s.pts.forEach(function(p){v.push(p.v);if(s.candle&&p.h){v.push(p.h,p.l)}})});if(!v.length)return null;
    var lo=Math.min.apply(null,v),hi=Math.max.apply(null,v);if(base!=null){lo=Math.min(lo,base);hi=Math.max(hi,base)}var pad=(hi-lo)*.1||1;lo-=pad;hi+=pad;
    return {lo:lo,hi:hi,Y:function(x){return m.t+(1-(x-lo)/(hi-lo))*(H-m.t-m.b)}}}
   var L=scale('L',o.base),R=dual?scale('R'):null;
@@ -125,12 +142,13 @@
   if(o.base!=null)svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(o.base),y2:L.Y(o.base),stroke:'var(--muted)','stroke-dasharray':'4 4'}));
   (o.hlines||[]).forEach(function(h){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(h.v),y2:L.Y(h.v),stroke:h.color||'var(--muted)','stroke-dasharray':'5 4','stroke-opacity':.9}));svg.appendChild(txt(m.l+6,L.Y(h.v)-5,h.label,{fill:h.color||'var(--muted)','font-size':10.5}))});
   var n=W<480?3:5,shortSpan=(t1-t0)<120*DAY;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,shortSpan?(d.getUTCMonth()+1)+'/'+d.getUTCDate():(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
-  series.forEach(function(s,i){var Y=(s.axis==='R'?R:L).Y,path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
+  series.forEach(function(s){if(s.candle){var cd=drawCandles(svg,s.pts,X,(s.axis==='R'?R:L).Y,W-m.l-m.r);s.trackPts=cd.bars;s.trackName=s.name+(cd.weekly?' (주봉)':' (일봉)')}});
+  series.forEach(function(s,i){if(s.candle)return;var Y=(s.axis==='R'?R:L).Y,path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
    if(i===0&&o.fill)svg.appendChild(el('path',{d:path+'L'+X(s.pts[s.pts.length-1].t)+' '+(H-m.b)+'L'+X(s.pts[0].t)+' '+(H-m.b)+'Z',fill:s.color,'fill-opacity':.1}));
    svg.appendChild(el('path',{d:path,fill:'none',stroke:s.color,'stroke-width':s.w||2,'stroke-linejoin':'round','stroke-opacity':s.opacity||1}))});
   box.innerHTML='';box.appendChild(svg);
   if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:function(sx){return t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0)},date:ETHTrack.ymd,
-   series:series.map(function(s){return {name:s.name,color:s.color,pts:s.pts,x:X,y:(s.axis==='R'?R:L).Y,fmt:s.fmt}})});
+   series:series.map(function(s){return {name:s.trackName||s.name,color:s.color,pts:s.trackPts||s.pts,x:X,y:(s.axis==='R'?R:L).Y,fmt:s.fmt}})});
  }
 
 
@@ -204,10 +222,10 @@
    var yr=dv.filter(function(x){return x.t>=dv[dv.length-1].t-365*DAY}),cur=optCur,sym=cur+'USDT';
    var draw=function(px){if(cur!==optCur)return;
     lineChart(box,[{name:cur+' DVOL',color:'var(--accent)',pts:yr,fmt:function(v){return v.toFixed(1)}},
-     {name:cur+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:px,fmt:function(v){return priceFmt(v,sym)}}],
+     {name:cur+' 가격',color:'var(--fg)',axis:'R',candle:true,pts:px,fmt:candleFmt(sym)}],
      {label:cur+' 내재변동성과 가격',h:260,fy:function(v){return v.toFixed(0)},fyR:function(v){return priceFmt(v,sym)},fill:true})};
    // the coin's daily price comes from the open-interest history that the OI chart already loads
-   load('oi',sym).then(function(o){draw((o.rows||[]).filter(function(r){return r.t>=yr[0].t}).map(function(r){return {t:r.t,v:r.price}}))}).catch(function(){draw([])});
+   load('oi',sym).then(function(o){draw(candlePts((o.rows||[]).filter(function(r){return r.t>=yr[0].t})))}).catch(function(){draw([])});
    document.getElementById('optTime').textContent=new Date(j.fetchedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' 기준';
   }).catch(function(e){box.innerHTML='<div class="empty">옵션 데이터를 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
  }
@@ -230,7 +248,7 @@
     {name:'Bybit 롱 계정',color:'var(--accent)',pts:yr.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'}},
     {name:'Binance 롱 계정',color:'var(--up)',pts:bn.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4},
     {name:'Binance 큰손(금액)',color:'#5b8def',pts:(j.binanceTop||[]).map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4},
-    {name:coin+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:px,fmt:function(v){return priceFmt(v,lsSym)}}
+    {name:coin+' 가격',color:'var(--fg)',axis:'R',candle:true,pts:px,fmt:candleFmt(lsSym)}
    ],{label:'롱 계정 비율과 가격',h:260,fy:function(v){return v.toFixed(0)+'%'},fyR:function(v){return priceFmt(v,lsSym)},base:50});
   }).catch(function(e){box.innerHTML='<div class="empty">롱/숏 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
  }
@@ -254,7 +272,7 @@
    card('Bybit 레버리지 비율',last.ratio.toFixed(3)+'%','1년 범위 '+vals[0].toFixed(3)+'% ~ '+vals[vals.length-1].toFixed(3)+'%','');
    navChart(box,[
     {name:coin+' 레버리지 비율',color:'var(--accent)',pts:rows.map(function(r){return {t:r.t,v:r.ratio}}),fmt:function(v){return v.toFixed(3)+'%'}},
-    {name:coin+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:rows.map(function(r){return {t:r.t,v:r.price}}),fmt:function(v){return priceFmt(v,sym)}}
+    {name:coin+' 가격',color:'var(--fg)',axis:'R',candle:true,pts:candlePts(rows),fmt:candleFmt(sym)}
    ],{label:coin+' 레버리지 비율과 가격',h:260,fill:true,fy:function(v){return v.toFixed(2)+'%'},fyR:function(v){return priceFmt(v,sym)},
     hlines:[{v:q(.8),label:'상위 20%',color:'var(--down)'},{v:q(.2),label:'하위 20%',color:'var(--up)'}],
     onManual:function(){[].forEach.call(document.getElementById('levRange').children,function(x){x.setAttribute('aria-pressed','false')})}},levWin);

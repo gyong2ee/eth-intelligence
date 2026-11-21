@@ -17,7 +17,8 @@ regions, so keep that setting.
   window, side by side in a row. Exception the user asked for: open interest and the coin's
   price share one chart (OI area on the right axis, price line on the left axis), and the
   long/short account ratio, DVOL and the leverage ratio (OI ÷ market cap) each share a chart
-  with the coin's price (indicator on the left axis, price on the right).
+  with the coin's price (indicator on the left axis, price on the right). On these overlay charts the price is drawn as daily candles
+  (weekly when a candle would be under 3px wide; the tooltip then says 주봉 and shows that week's values).
 - Default range is **1Y** unless the chart is monthly macro data that needs a longer view.
 - Charts with a full-period navigator: drag inside to move, drag an edge to resize, click
   outside to jump there, wheel to zoom. Redraw in place on wheel/drag (no rebuild, no animation).
