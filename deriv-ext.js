@@ -123,6 +123,7 @@
    svg.appendChild(dual?txt(m.l-8,L.Y(g)+4,o.fy(g),{'text-anchor':'end'}):txt(W-m.r+8,L.Y(g)+4,o.fy(g)))}
   if(R){var rs=niceStep((R.hi-R.lo)/4);for(var q=Math.ceil(R.lo/rs)*rs;q<=R.hi;q+=rs)svg.appendChild(txt(W-m.r+8,R.Y(q)+4,o.fyR(q),{fill:'var(--fg)','fill-opacity':.75}))}
   if(o.base!=null)svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(o.base),y2:L.Y(o.base),stroke:'var(--muted)','stroke-dasharray':'4 4'}));
+  (o.hlines||[]).forEach(function(h){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(h.v),y2:L.Y(h.v),stroke:h.color||'var(--muted)','stroke-dasharray':'5 4','stroke-opacity':.9}));svg.appendChild(txt(m.l+6,L.Y(h.v)-5,h.label,{fill:h.color||'var(--muted)','font-size':10.5}))});
   var n=W<480?3:5,shortSpan=(t1-t0)<120*DAY;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,shortSpan?(d.getUTCMonth()+1)+'/'+d.getUTCDate():(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
   series.forEach(function(s,i){var Y=(s.axis==='R'?R:L).Y,path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
    if(i===0&&o.fill)svg.appendChild(el('path',{d:path+'L'+X(s.pts[s.pts.length-1].t)+' '+(H-m.b)+'L'+X(s.pts[0].t)+' '+(H-m.b)+'Z',fill:s.color,'fill-opacity':.1}));
@@ -181,6 +182,32 @@
   }).catch(function(e){box.innerHTML='<div class="empty">롱/숏 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
  }
 
+ /* ---------- leverage ratio: open interest / market cap ---------- */
+ var levSym='ETHUSDT';
+ function drawLev(){
+  var box=document.getElementById('levChart');box.innerHTML='<div class="empty">불러오는 중</div>';
+  var sym=levSym,coin=sym.replace('USDT','');
+  Promise.all([load('lev',sym),fetch('/api/deriv?src=oinow&coin='+coin).then(function(r){return r.ok?r.json():null}).catch(function(){return null})]).then(function(res){
+   if(sym!==levSym)return;
+   var j=res[0],now=res[1],rows=j.rows||[];
+   var vals=rows.map(function(r){return r.ratio}).slice().sort(function(a,b){return a-b});
+   var q=function(p){return vals[Math.min(vals.length-1,Math.floor(p*(vals.length-1)))]};
+   var last=rows[rows.length-1],rank=vals.filter(function(v){return v<=last.ratio}).length/vals.length*100;
+   var cards=document.getElementById('levCards');cards.innerHTML='';
+   var card=function(k,v,sub,cls){var d=document.createElement('div');d.className='opt-card';var a=document.createElement('span');a.className='label';a.textContent=k;var b=document.createElement('b');b.className='num'+(cls?' '+cls:'');b.textContent=v;var c=document.createElement('span');c.className='note';c.textContent=sub;d.append(a,b,c);cards.appendChild(d)};
+   if(now&&now.totalUsd&&j.marketCap)card('전체 시장 레버리지',(now.totalUsd/j.marketCap*100).toFixed(2)+'%','미결제약정 $'+(now.totalUsd/1e9).toFixed(1)+'B ÷ 시가총액 $'+(j.marketCap/1e9).toFixed(0)+'B · '+now.exchanges.length+'개 시장','');
+   var tone=rank>=80?'down':rank<=20?'up':'',state=rank>=80?'레버리지 과열 구간':rank<=20?'레버리지 낮은 구간':'보통 구간';
+   card('1년 중 위치',rank>=50?'상위 '+Math.max(1,Math.round(100-rank))+'%':'하위 '+Math.max(1,Math.round(rank))+'%',state+' · Bybit 기준',tone);
+   card('Bybit 레버리지 비율',last.ratio.toFixed(3)+'%','1년 범위 '+vals[0].toFixed(3)+'% ~ '+vals[vals.length-1].toFixed(3)+'%','');
+   lineChart(box,[
+    {name:coin+' 레버리지 비율',color:'var(--accent)',pts:rows.map(function(r){return {t:r.t,v:r.ratio}}),fmt:function(v){return v.toFixed(3)+'%'}},
+    {name:coin+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:rows.map(function(r){return {t:r.t,v:r.price}}),fmt:function(v){return priceFmt(v,sym)}}
+   ],{label:coin+' 레버리지 비율과 가격',h:260,fill:true,fy:function(v){return v.toFixed(2)+'%'},fyR:function(v){return priceFmt(v,sym)},
+    hlines:[{v:q(.8),label:'상위 20%',color:'var(--down)'},{v:q(.2),label:'하위 20%',color:'var(--up)'}]});
+   document.getElementById('levSrc').textContent='시가총액: '+j.capSource;
+  }).catch(function(e){box.innerHTML='<div class="empty">레버리지 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
+ }
+
  function start(){
   if(!document.getElementById('oiLongChart'))return;
   seg('oiLongSym',function(v){oiState.sym=v;drawOI()});
@@ -188,8 +215,9 @@
   seg('liqSym',function(v){liqSym=v;drawLiq()});
   if(document.getElementById('optChart')){seg('optCur',function(v){optCur=v;drawOpt()});drawOpt()}
   if(document.getElementById('lsChart')){seg('lsSym',function(v){lsSym=v;drawLS()});drawLS()}
+  if(document.getElementById('levChart')){seg('levSym',function(v){levSym=v;drawLev()});drawLev()}
   drawOI();drawLiq();
-  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq();if(document.getElementById('optChart'))drawOpt();if(document.getElementById('lsChart'))drawLS()},200)});
+  var t;window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){drawOI();drawLiq();if(document.getElementById('optChart'))drawOpt();if(document.getElementById('lsChart'))drawLS();if(document.getElementById('levChart'))drawLev()},200)});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

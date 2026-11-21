@@ -196,6 +196,17 @@ svg text{font-family:var(--f-body)}
     <p class="note">Bybit USDT 무기한 선물 한 곳의 일별 미결제약정(달러 환산)입니다. 맨 위 카드는 Binance·Bybit·OKX 6개 시장 합계라 이 그래프보다 큽니다. 몇 년치 기록을 무료로 주는 곳이 Bybit뿐이라 추이는 Bybit로 보여 주며, 흐름은 전체 시장과 대체로 같습니다.</p>
   </section>
 
+  <section class="panel" id="leverage">
+    <div class="panel-head">
+      <h2>레버리지 비율 · 미결제약정 ÷ 시가총액</h2>
+      <div class="seg-row"><div class="seg" id="levSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div></div>
+    </div>
+    <div class="opt-cards" id="levCards"></div>
+    <div class="legend-row"><span><i style="background:var(--accent)"></i>레버리지 비율 (왼쪽 축)</span><span><i class="dash" style="border-top-style:solid"></i>코인 가격 (오른쪽 축)</span><span><i class="dash" style="border-top-color:var(--down)"></i>1년 상위 20%</span><span><i class="dash" style="border-top-color:var(--up)"></i>1년 하위 20%</span></div>
+    <div class="chart-wrap" id="levChart"><div class="empty">불러오는 중</div></div>
+    <p class="note">시장 크기 대비 선물 레버리지가 얼마나 쌓였는지 보는 지표입니다. 빨간 점선 위(1년 중 상위 20%)는 레버리지가 과하게 쌓인 구간이라 한쪽으로 쏠린 포지션이 연쇄 청산되며 크게 움직이기 쉽습니다. 초록 점선 아래는 레버리지가 정리된 구간입니다. 추이는 Bybit 미결제약정 기준이고, 첫 번째 카드만 6개 시장 합계입니다. <span id="levSrc"></span></p>
+  </section>
+
   <section class="panel" id="liqmap">
     <div class="panel-head">
       <h2>청산맵 <span class="tag-est">추정</span></h2>
