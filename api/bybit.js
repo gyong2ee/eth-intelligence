@@ -64,11 +64,25 @@ async function liqMap(symbol){
  return {symbol,price,step:+step.toFixed(2),window:'30d hourly',model:'OI 증가분 × 롱숏 비율 × 레버리지 10/25/50/100배 가정',source:'Bybit linear perpetual (추정)',rows,updated:px[px.length-1].t};
 }
 
+// Long/short account ratio: Bybit daily history (about 500 days) and Binance's last 30 days.
+async function longShort(symbol){
+ const [by,bn]=await Promise.allSettled([
+  get('account-ratio',{category:'linear',symbol,period:'1d',limit:500}).then(r=>(r.list||[]).map(x=>({t:+x.timestamp,long:+x.buyRatio*100})).filter(x=>Number.isFinite(x.t)&&Number.isFinite(x.long)).sort((a,b)=>a.t-b.t)),
+  fetch('https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol='+symbol+'&period=1d&limit=30',{headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)})
+   .then(async r=>{const j=await r.json();if(!r.ok||!Array.isArray(j))throw Error('Binance HTTP '+r.status);return j.map(x=>({t:+x.timestamp,long:+x.longAccount*100})).filter(x=>Number.isFinite(x.long)).sort((a,b)=>a.t-b.t)})
+ ]);
+ const out={symbol,unit:'% of accounts long',errors:{}};
+ if(by.status==='fulfilled')out.bybit=by.value;else{out.bybit=[];out.errors.bybit=by.reason.message}
+ if(bn.status==='fulfilled')out.binance=bn.value;else{out.binance=[];out.errors.binance=bn.reason.message}
+ if(!out.bybit.length&&!out.binance.length)throw Error('no long/short data');
+ return out;
+}
+
 module.exports=async function(req,res){
  const symbol=String(req.query.symbol||'ETHUSDT').toUpperCase(),kind=String(req.query.kind||'oi');
  if(!SYMBOLS.has(symbol))return res.status(400).json({error:'symbol must be ETHUSDT or BTCUSDT'});
  try{
-  const body=kind==='liq'?await liqMap(symbol):await oiHistory(symbol);
+  const body=kind==='liq'?await liqMap(symbol):kind==='ls'?await longShort(symbol):await oiHistory(symbol);
   res.setHeader('Cache-Control',kind==='liq'?'s-maxage=600, stale-while-revalidate=1800':'s-maxage=3600, stale-while-revalidate=21600');
   return res.json(body);
  }catch(e){return res.status(502).json({error:e.message,symbol,kind})}
