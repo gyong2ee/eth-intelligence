@@ -16,7 +16,8 @@ async function okx(coin){
  const d=j?.data?.[0];if(!d)throw Error('no data');
  const est=Number(d.estRate),avg=Number(d.avgRate);
  const v=Number.isFinite(est)&&est>0?est:avg;if(!Number.isFinite(v))throw Error('no rate');
- return {venue:'OKX',product:'Simple Earn 유연',coin,apy:+(v*100).toFixed(2),note:'다음 1시간 예상 대출 이율'};
+ const amt=Number(d.avgAmtUsd);
+ return {venue:'OKX',product:'Simple Earn 유연',coin,apy:+(v*100).toFixed(2),amountUsd:Number.isFinite(amt)&&amt>0?Math.round(amt):null,note:'예상 대출 이율 · 대출 잔액 기준'};
 }
 // Bybit Earn: flexible savings product list (public).
 async function bybit(coin){
@@ -35,7 +36,7 @@ const topBy=(rows,key)=>{const m=new Map();for(const r of rows){const k=key(r),o
 async function aave(){
  const rows=(await pools()).filter(p=>p.project==='aave-v3'&&p.chain==='Ethereum'&&['USDC','USDT'].includes(p.symbol));
  if(!rows.length)throw Error('no pools');
- return topBy(rows,p=>p.symbol).map(p=>({venue:'Aave v3',product:'공급 (이더리움 메인 마켓)',coin:p.symbol,apy:+Number(p.apyBase??p.apy).toFixed(2),note:'온체인 예치 · DefiLlama'}));
+ return topBy(rows,p=>p.symbol).map(p=>({venue:'Aave v3',product:'공급 (이더리움 메인 마켓)',coin:p.symbol,apy:+Number(p.apyBase??p.apy).toFixed(2),amountUsd:Math.round(p.tvlUsd||0)||null,note:'온체인 예치 · DefiLlama'}));
 }
 async function liquidStaking(){
  const names={RETH:'Rocket Pool rETH',CBETH:'Coinbase cbETH',WBETH:'Binance WBETH'};
