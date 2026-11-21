@@ -67,7 +67,8 @@ button:disabled{opacity:.45;cursor:wait}
 .inst .val{font-family:var(--num);font-weight:600;font-size:27px;line-height:1.15;letter-spacing:-.01em}
 .inst .chg{font-size:12.5px;color:var(--soft)}
 .inst p{margin:2px 0 0;font-size:12.5px;color:var(--soft);line-height:1.55}
-.inst svg{width:100%;height:40px;margin-top:6px}
+.inst svg{width:100%;height:40px;margin-top:6px;cursor:crosshair}
+.inst{position:relative}
 .inst.wait .val{color:var(--dim)}
 
 /* charts */
@@ -227,6 +228,7 @@ const bn=v=>v>=1000?'$'+(v/1000).toFixed(2)+'T':'$'+v.toFixed(v<10?1:0)+'B';
 
 /* ---------- instruments ---------- */
 const TIDE={flood:'밀물',ebb:'썰물',slack:'정조'};
+const SPARK_FMT={m2:v=>(v>=0?'+':'')+v.toFixed(2)+'% (전년 대비)',net:v=>bn(v),tga:v=>bn(v),rrp:v=>bn(v),stable:v=>bn(v),dxy:v=>v.toFixed(2),y10:v=>v.toFixed(2)+'%',tvl:v=>bn(v/1e9)};
 const INST=[
  {k:'m2',code:'M2',name:'미국 통화량',
   read:d=>{const y=yoy(d.m2),l=y.at(-1);return {val:pct(l.v),chg:'1년 전 대비 · '+new Date(l.t).getUTCFullYear()+'.'+(new Date(l.t).getUTCMonth()+1)+' 기준',sig:l.v>=4?'flood':l.v<0?'ebb':'slack',spark:y.slice(-36)}},
@@ -270,7 +272,8 @@ function renderLog(list){
     const ch=document.createElement('div');ch.className='chg n';ch.textContent=r?r.chg:'관측값을 받지 못했습니다';
     const p=document.createElement('p');p.textContent=r?(i.why[r.sig]+(r.empty&&i.note?' '+i.note:'')):'';
     box.append(top,h,v,ch,p);
-    if(r){const svg=el('svg',{viewBox:'0 0 200 40',preserveAspectRatio:'none','aria-hidden':'true'});spark(svg,r.spark,r.sig);box.append(svg)}
+    if(r){const svg=el('svg',{viewBox:'0 0 200 40',preserveAspectRatio:'none','aria-hidden':'true'});const g=spark(svg,r.spark,r.sig);box.append(svg);
+      if(g&&window.ETHTrack)ETHTrack.attach(svg,{host:box,W:200,left:0,right:200,top:0,bottom:40,dots:false,tAt:sx=>g.t0+sx/200*(g.t1-g.t0),date:ETHTrack.ymd,series:[{name:i.name,color:g.col,pts:r.spark,x:g.x,y:g.y,fmt:SPARK_FMT[i.k]||(v=>v.toFixed(2))}]})}
     $('log').append(box);
   }
 }
@@ -282,6 +285,7 @@ function spark(svg,p,sig){
   const d=p.map((q,i)=>(i?'L':'M')+x(q.t).toFixed(1)+' '+y(q.v).toFixed(1)).join(' ');
   svg.append(el('path',{d:d+' L200 40 L0 40 Z',fill:col,opacity:.12}));
   svg.append(el('path',{d,fill:'none',stroke:col,'stroke-width':1.6,'vector-effect':'non-scaling-stroke'}));
+  return {x,y,t0,t1,col};
 }
 
 function renderVerdict(list){
