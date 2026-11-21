@@ -1,7 +1,9 @@
 # ETH Intelligence
 
 Static site on Vercel (`index.html`, `derivatives.html`, `liquidity.html`) with serverless
-routes in `api/`. Functions run in Seoul (`vercel.json` → `icn1`); Binance and Bybit block US
+routes in `api/`. The Hobby plan allows at most 12 functions per deployment (now 10): add new
+data sources as handlers in `lib/` behind an existing route (e.g. `api/deriv.js?src=...`)
+instead of new files in `api/`. Functions run in Seoul (`vercel.json` → `icn1`); Binance and Bybit block US
 regions, so keep that setting.
 
 ## Rules for every chart
@@ -13,7 +15,8 @@ regions, so keep that setting.
   color dot matching its line, so the values are easy to tell apart.
 - Do not overlay unrelated series on one chart. Put them in separate charts on the same time
   window, side by side in a row. Exception the user asked for: open interest and the coin's
-  price share one chart (OI area on the right axis, price line on the left axis).
+  price share one chart (OI area on the right axis, price line on the left axis), and the
+  long/short account ratio shares a chart with the coin's price (ratio left axis, price right).
 - Default range is **1Y** unless the chart is monthly macro data that needs a longer view.
 - Charts with a full-period navigator: drag inside to move, drag an edge to resize, click
   outside to jump there, wheel to zoom. Redraw in place on wheel/drag (no rebuild, no animation).
@@ -48,6 +51,7 @@ regions, so keep that setting.
 ## Data
 
 - Prefer primary sources: FRED for US macro series, Treasury for TGA, DefiLlama for stablecoins/TVL/yields,
-  Bybit/Binance public endpoints for derivatives. Show real values only, no estimates of
+  Bybit/Binance/OKX public endpoints for derivatives. Open interest cards sum Binance, Bybit and
+  OKX (USDT- and coin-margined) via `/api/deriv?src=oinow`; CMC's OI total is wrong (unit mix), don't use it. Show real values only, no estimates of
   delayed data (e.g. MVRV from Coin Metrics lags 1–2 days; that is expected).
 - `CMC_API_KEY` is set for Production and Preview in Vercel.

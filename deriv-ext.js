@@ -1,5 +1,5 @@
 // Derivatives page add-ons: long open-interest history and an estimated liquidation map,
-// each for BTC and ETH, from /api/bybit.
+// each for BTC and ETH, from /api/deriv (src=bybit / options).
 (function(){
  var NS='http://www.w3.org/2000/svg',DAY=864e5;
  var FONT='Inter, "Noto Sans KR", system-ui, sans-serif';
@@ -9,7 +9,7 @@
  function usd(v){return v>=1e9?'$'+(v/1e9).toFixed(v>=1e10?1:2)+'B':v>=1e6?'$'+(v/1e6).toFixed(0)+'M':'$'+Math.round(v).toLocaleString('en-US')}
  function priceFmt(p,sym){return '$'+Number(p).toLocaleString('en-US',{maximumFractionDigits:sym==='BTCUSDT'?0:0})}
  var cache={};
- function load(kind,sym){var key=kind+sym;if(!cache[key])cache[key]=fetch('/api/bybit?kind='+kind+'&symbol='+sym,{headers:{Accept:'application/json'}}).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||('HTTP '+r.status));return j})});cache[key].catch(function(){delete cache[key]});return cache[key]}
+ function load(kind,sym){var key=kind+sym;if(!cache[key])cache[key]=fetch('/api/deriv?src=bybit&kind='+kind+'&symbol='+sym,{headers:{Accept:'application/json'}}).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||('HTTP '+r.status));return j})});cache[key].catch(function(){delete cache[key]});return cache[key]}
  function seg(id,onPick){var box=document.getElementById(id);box.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(box.children,function(x){x.setAttribute('aria-pressed',String(x===b))});onPick(b.dataset.v)})}
 
  /* ---------- open interest history ---------- */
@@ -108,31 +108,35 @@
  function lineChart(box,series,o){
   series=series.filter(function(s){return s.pts&&s.pts.length>1});
   if(!series.length){box.innerHTML='<div class="empty">기록을 받지 못했습니다.</div>';return}
-  var W=Math.max(280,box.clientWidth||700),H=o.h||240,m={l:8,r:58,t:14,b:24};
+  var dual=series.some(function(s){return s.axis==='R'});
+  var W=Math.max(280,box.clientWidth||700),H=o.h||240,m={l:dual?52:8,r:dual?64:58,t:14,b:24};
   var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':o.label});
   var all=[];series.forEach(function(s){s.pts.forEach(function(p){all.push(p)})});
   var t0=Math.min.apply(null,all.map(function(p){return p.t})),t1=Math.max.apply(null,all.map(function(p){return p.t}));
-  var lo=Math.min.apply(null,all.map(function(p){return p.v})),hi=Math.max.apply(null,all.map(function(p){return p.v}));
-  if(o.base!=null){lo=Math.min(lo,o.base);hi=Math.max(hi,o.base)}
-  var pad=(hi-lo)*.1||1;lo-=pad;hi+=pad;
-  var X=function(t){return m.l+(t-t0)/((t1-t0)||1)*(W-m.l-m.r)},Y=function(v){return m.t+(1-(v-lo)/(hi-lo))*(H-m.t-m.b)};
-  var st=niceStep((hi-lo)/4);
-  for(var g=Math.ceil(lo/st)*st;g<=hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:Y(g),y2:Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,Y(g)+4,o.fy(g)))}
-  if(o.base!=null)svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:Y(o.base),y2:Y(o.base),stroke:'var(--muted)','stroke-dasharray':'4 4'}));
-  var n=W<480?3:5;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0')+(o.days?'.'+String(d.getUTCDate()).padStart(2,'0'):''),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
-  series.forEach(function(s,i){var path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
+  function scale(side,base){var v=[];series.forEach(function(s){if((s.axis||'L')===side)s.pts.forEach(function(p){v.push(p.v)})});if(!v.length)return null;
+   var lo=Math.min.apply(null,v),hi=Math.max.apply(null,v);if(base!=null){lo=Math.min(lo,base);hi=Math.max(hi,base)}var pad=(hi-lo)*.1||1;lo-=pad;hi+=pad;
+   return {lo:lo,hi:hi,Y:function(x){return m.t+(1-(x-lo)/(hi-lo))*(H-m.t-m.b)}}}
+  var L=scale('L',o.base),R=dual?scale('R'):null;
+  var X=function(t){return m.l+(t-t0)/((t1-t0)||1)*(W-m.l-m.r)};
+  var st=niceStep((L.hi-L.lo)/4);
+  for(var g=Math.ceil(L.lo/st)*st;g<=L.hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(g),y2:L.Y(g),stroke:'var(--line)','stroke-opacity':.6}));
+   svg.appendChild(dual?txt(m.l-8,L.Y(g)+4,o.fy(g),{'text-anchor':'end'}):txt(W-m.r+8,L.Y(g)+4,o.fy(g)))}
+  if(R){var rs=niceStep((R.hi-R.lo)/4);for(var q=Math.ceil(R.lo/rs)*rs;q<=R.hi;q+=rs)svg.appendChild(txt(W-m.r+8,R.Y(q)+4,o.fyR(q),{fill:'var(--fg)','fill-opacity':.75}))}
+  if(o.base!=null)svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(o.base),y2:L.Y(o.base),stroke:'var(--muted)','stroke-dasharray':'4 4'}));
+  var n=W<480?3:5;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
+  series.forEach(function(s,i){var Y=(s.axis==='R'?R:L).Y,path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
    if(i===0&&o.fill)svg.appendChild(el('path',{d:path+'L'+X(s.pts[s.pts.length-1].t)+' '+(H-m.b)+'L'+X(s.pts[0].t)+' '+(H-m.b)+'Z',fill:s.color,'fill-opacity':.1}));
-   svg.appendChild(el('path',{d:path,fill:'none',stroke:s.color,'stroke-width':s.w||2,'stroke-linejoin':'round'}))});
+   svg.appendChild(el('path',{d:path,fill:'none',stroke:s.color,'stroke-width':s.w||2,'stroke-linejoin':'round','stroke-opacity':s.opacity||1}))});
   box.innerHTML='';box.appendChild(svg);
   if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:function(sx){return t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0)},date:ETHTrack.ymd,
-   series:series.map(function(s){return {name:s.name,color:s.color,pts:s.pts,x:X,y:Y,fmt:s.fmt}})});
+   series:series.map(function(s){return {name:s.name,color:s.color,pts:s.pts,x:X,y:(s.axis==='R'?R:L).Y,fmt:s.fmt}})});
  }
 
  /* ---------- options (Deribit) ---------- */
  var optCur='ETH',optCache={};
  function drawOpt(){
   var box=document.getElementById('optChart');box.innerHTML='<div class="empty">불러오는 중</div>';
-  var p=optCache[optCur]||(optCache[optCur]=fetch('/api/options?currency='+optCur).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||('HTTP '+r.status));return j})}));
+  var p=optCache[optCur]||(optCache[optCur]=fetch('/api/deriv?src=options&currency='+optCur).then(function(r){return r.json().then(function(j){if(!r.ok)throw Error(j.error||('HTTP '+r.status));return j})}));
   p.catch(function(){delete optCache[optCur]});
   p.then(function(j){
    var pc=j.putCall,cards=document.getElementById('optCards');cards.innerHTML='';
@@ -161,10 +165,12 @@
    var tone=function(v){return v>=60?'down':v<=40?'up':''};
    if(by.length){var l=by[by.length-1].long;card('Bybit 롱 계정',l.toFixed(1)+'%','숏 '+(100-l).toFixed(1)+'% · 롱/숏 '+(l/(100-l)).toFixed(2),tone(l))}
    if(bn.length){var b2=bn[bn.length-1].long;card('Binance 롱 계정',b2.toFixed(1)+'%','숏 '+(100-b2).toFixed(1)+'% · 롱/숏 '+(b2/(100-b2)).toFixed(2),tone(b2))}
+   var coin=lsSym.replace('USDT',''),px=(j.price||[]).filter(function(x){return x.t>=end-365*DAY});
    lineChart(box,[
     {name:'Bybit 롱 계정',color:'var(--accent)',pts:yr.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'}},
-    {name:'Binance 롱 계정',color:'var(--up)',pts:bn.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4}
-   ],{label:'롱 계정 비율',fy:function(v){return v.toFixed(0)+'%'},base:50});
+    {name:'Binance 롱 계정',color:'var(--up)',pts:bn.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4},
+    {name:coin+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:px,fmt:function(v){return priceFmt(v,lsSym)}}
+   ],{label:'롱 계정 비율과 가격',h:260,fy:function(v){return v.toFixed(0)+'%'},fyR:function(v){return priceFmt(v,lsSym)},base:50});
   }).catch(function(e){box.innerHTML='<div class="empty">롱/숏 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
  }
 
