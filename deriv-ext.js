@@ -267,14 +267,14 @@
    var cards=document.getElementById('levCards');cards.innerHTML='';
    var card=function(k,v,sub,cls){var d=document.createElement('div');d.className='opt-card';var a=document.createElement('span');a.className='label';a.textContent=k;var b=document.createElement('b');b.className='num'+(cls?' '+cls:'');b.textContent=v;var c=document.createElement('span');c.className='note';c.textContent=sub;d.append(a,b,c);cards.appendChild(d)};
    if(now&&now.totalUsd&&j.marketCap)card('전체 시장 레버리지',(now.totalUsd/j.marketCap*100).toFixed(2)+'%','미결제약정 $'+(now.totalUsd/1e9).toFixed(1)+'B ÷ 시가총액 $'+(j.marketCap/1e9).toFixed(0)+'B · '+now.exchanges.length+'개 시장','');
-   var tone=rank>=80?'down':rank<=20?'up':'',state=rank>=80?'레버리지 과열 구간':rank<=20?'레버리지 낮은 구간':'보통 구간';
+   var tone=rank>=90?'down':rank<=10?'up':'',state=rank>=90?'레버리지 과열 구간':rank<=10?'레버리지 낮은 구간':'보통 구간';
    card('1년 중 위치',rank>=50?'상위 '+Math.max(1,Math.round(100-rank))+'%':'하위 '+Math.max(1,Math.round(rank))+'%',state+' · Bybit 기준',tone);
    card('Bybit 레버리지 비율',last.ratio.toFixed(3)+'%','1년 범위 '+vals[0].toFixed(3)+'% ~ '+vals[vals.length-1].toFixed(3)+'%','');
    navChart(box,[
     {name:coin+' 레버리지 비율',color:'var(--accent)',pts:rows.map(function(r){return {t:r.t,v:r.ratio}}),fmt:function(v){return v.toFixed(3)+'%'}},
     {name:coin+' 가격',color:'var(--fg)',axis:'R',candle:true,pts:candlePts(rows),fmt:candleFmt(sym)}
    ],{label:coin+' 레버리지 비율과 가격',h:260,fill:true,fy:function(v){return v.toFixed(2)+'%'},fyR:function(v){return priceFmt(v,sym)},
-    hlines:[{v:q(.8),label:'상위 20%',color:'var(--down)'},{v:q(.2),label:'하위 20%',color:'var(--up)'}],
+    hlines:[{v:q(.9),label:'상위 10%',color:'var(--down)'},{v:q(.1),label:'하위 10%',color:'var(--up)'}],
     onManual:function(){[].forEach.call(document.getElementById('levRange').children,function(x){x.setAttribute('aria-pressed','false')})}},levWin);
    document.getElementById('levSrc').textContent='시가총액: '+j.capSource;
   }).catch(function(e){box.innerHTML='<div class="empty">레버리지 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});

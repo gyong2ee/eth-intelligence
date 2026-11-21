@@ -207,9 +207,9 @@ svg text{font-family:var(--f-body)}
       <div class="seg-row"><div class="seg" id="levSym"><button type="button" data-v="ETHUSDT" aria-pressed="true">ETH</button><button type="button" data-v="BTCUSDT" aria-pressed="false">BTC</button></div><div class="seg" id="levRange"><button type="button" data-v="90" aria-pressed="false">3M</button><button type="button" data-v="180" aria-pressed="false">6M</button><button type="button" data-v="365" aria-pressed="true">1Y</button><button type="button" data-v="0" aria-pressed="false">전체</button></div></div>
     </div>
     <div class="opt-cards" id="levCards"></div>
-    <div class="legend-row"><span><i style="background:var(--accent)"></i>레버리지 비율 (왼쪽 축)</span><span><i class="cndl"></i>코인 가격 캔들 (오른쪽 축)</span><span><i class="dash" style="border-top-color:var(--down)"></i>1년 상위 20%</span><span><i class="dash" style="border-top-color:var(--up)"></i>1년 하위 20%</span></div>
+    <div class="legend-row"><span><i style="background:var(--accent)"></i>레버리지 비율 (왼쪽 축)</span><span><i class="cndl"></i>코인 가격 캔들 (오른쪽 축)</span><span><i class="dash" style="border-top-color:var(--down)"></i>1년 상위 10%</span><span><i class="dash" style="border-top-color:var(--up)"></i>1년 하위 10%</span></div>
     <div class="chart-wrap" id="levChart"><div class="empty">불러오는 중</div></div>
-    <p class="note">시장 크기 대비 선물 레버리지가 얼마나 쌓였는지 보는 지표입니다. 빨간 점선 위(1년 중 상위 20%)는 레버리지가 과하게 쌓인 구간이라 한쪽으로 쏠린 포지션이 연쇄 청산되며 크게 움직이기 쉽습니다. 초록 점선 아래는 레버리지가 정리된 구간입니다. 추이는 Bybit 미결제약정 기준이고, 첫 번째 카드만 6개 시장 합계입니다. <span id="levSrc"></span></p>
+    <p class="note">시장 크기 대비 선물 레버리지가 얼마나 쌓였는지 보는 지표입니다. 빨간 점선 위(1년 중 상위 10%)는 레버리지가 과하게 쌓인 구간이라 한쪽으로 쏠린 포지션이 연쇄 청산되며 크게 움직이기 쉽습니다. 초록 점선 아래는 레버리지가 정리된 구간입니다. 추이는 Bybit 미결제약정 기준이고, 첫 번째 카드만 6개 시장 합계입니다. <span id="levSrc"></span></p>
   </section>
 
   <section class="panel" id="liqmap">
