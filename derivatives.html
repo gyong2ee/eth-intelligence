@@ -10,6 +10,7 @@
 #liqmap a{color:var(--accent)}
 section[id]{scroll-margin-top:16px}
 #liqChart{position:relative}
+.chart-wrap{position:relative}
 #liqChart svg{cursor:crosshair;touch-action:none}
 .liq-tip{position:absolute;pointer-events:none;transform:translate(-50%,-100%);background:var(--fg);color:var(--bg);border-radius:10px;padding:7px 11px;display:grid;gap:1px;white-space:nowrap;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.35);z-index:5}
 .liq-tip b{font:700 15px/1.3 Inter,"Noto Sans KR",sans-serif}
@@ -375,8 +376,8 @@ function renderFunding(f,live){
 
 function drawChart(pts,livePt){
   const svg=$('chart');const all=livePt?[...pts,livePt]:pts.slice();
-  if(all.length<2){svg.hidden=true;$('chartEmpty').hidden=false;$('chartEmpty').textContent='OI 기록이 부족합니다.';return}
-  svg.hidden=false;$('chartEmpty').hidden=true;
+  if(all.length<2){svg.toggleAttribute('hidden',true);$('chartEmpty').hidden=false;$('chartEmpty').textContent='OI 기록이 부족합니다.';return}
+  svg.toggleAttribute('hidden',false);$('chartEmpty').hidden=true;
   const W=Math.max(300,svg.clientWidth||800),H=260,m={l:52,r:16,t:14,b:28};
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
   const t0=all[0].t,t1=all.at(-1).t;
@@ -461,19 +462,22 @@ function miniChart(svg,pts,opt){
     svg.append(el('path',{d,fill:'none',stroke:'var(--accent)','stroke-width':1.8,'stroke-linejoin':'round'}));
     const l=pts.at(-1);svg.append(el('circle',{cx:x(l.t),cy:y(l.v),r:4,fill:'var(--fg)',stroke:'var(--accent)','stroke-width':2}));
   }
+  if(window.ETHTrack&&opt.tip)ETHTrack.attach(svg,{W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:sx=>t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0),
+    date:t=>new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}),
+    series:[{name:opt.name,color:opt.color||'var(--accent)',pts,x,y,fmt:opt.tip}]});
 }
 function renderExtra(bn,by){
-  const show=(id,ok,msg)=>{$(id+'Chart').hidden=!ok;$(id+'Empty').hidden=ok;if(!ok)$(id+'Empty').textContent=msg};
+  const show=(id,ok,msg)=>{$(id+'Chart').toggleAttribute('hidden',!ok);$(id+'Empty').hidden=ok;if(!ok)$(id+'Empty').textContent=msg};
   const fund=bn&&Array.isArray(bn.funding)?bn.funding.filter(p=>isFinite(p.v)):[];
   if(fund.length>1){
-    show('bn',true);miniChart($('bnChart'),fund,{bars:true,base:0.01,fmt:v=>v.toFixed(3)+'%'});
+    show('bn',true);miniChart($('bnChart'),fund,{bars:true,base:0.01,fmt:v=>v.toFixed(3)+'%',name:'Binance 펀딩비',color:'var(--up)',tip:v=>(v>=0?'+':'')+v.toFixed(4)+'%'});
     const last=fund.at(-1).v,avg=fund.reduce((a,p)=>a+p.v,0)/fund.length,neg=fund.filter(p=>p.v<0).length;
     $('bnNote').textContent='최근 '+(last>=0?'+':'')+last.toFixed(4)+'%';
     $('bnRead').textContent='30일 평균 '+(avg>=0?'+':'')+avg.toFixed(4)+'% · 음(-) 펀딩 '+neg+'/'+fund.length+'회 · 점선은 기준선 0.01%';
   }else show('bn',false,'Binance 펀딩비 기록을 받지 못했습니다. 아래 소스 상태를 확인하세요.');
   const oi=by&&Array.isArray(by.rows)?by.rows:[];
   if(oi.length>1){
-    show('by',true);miniChart($('byChart'),oi,{fmt:v=>Math.round(v/1e3)+'K'});
+    show('by',true);miniChart($('byChart'),oi,{fmt:v=>Math.round(v/1e3)+'K',name:'Bybit 미결제약정',tip:v=>Math.round(v).toLocaleString('en-US')+' ETH'});
     const ch=(oi.at(-1).v/oi[0].v-1)*100;
     $('byNote').textContent=Math.round(oi.at(-1).v).toLocaleString('en-US')+' ETH';
     $('byRead').textContent='7일 변화 '+pct(ch,1)+' · 범위 '+Math.round(Math.min(...oi.map(p=>p.v))/1e3)+'K – '+Math.round(Math.max(...oi.map(p=>p.v))/1e3)+'K ETH';

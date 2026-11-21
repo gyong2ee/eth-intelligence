@@ -48,3 +48,48 @@
  function init(){tabs();side();toTop()}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+// Shared mouse tracker for every chart: a crosshair, a dot per series and a floating
+// tooltip with the date and each series' value (color-coded when there are several).
+window.ETHTrack=(function(){
+ var NS='http://www.w3.org/2000/svg';
+ function near(pts,t){var lo=0,hi=pts.length-1;while(hi-lo>1){var m=(lo+hi)>>1;if(pts[m].t<t)lo=m;else hi=m}return Math.abs(pts[lo].t-t)<=Math.abs(pts[hi].t-t)?pts[lo]:pts[hi]}
+ function tip(host){
+  if(getComputedStyle(host).position==='static')host.style.position='relative';
+  var box=host.querySelector(':scope>.eth-track-tip');if(!box){box=document.createElement('div');box.className='eth-track-tip';box.hidden=true;host.appendChild(box)}
+  return {
+   show:function(clientX,clientY,title,rows){
+    box.innerHTML='';var h=document.createElement('div');h.className='tt-h';h.textContent=title;box.appendChild(h);
+    rows.forEach(function(r){var d=document.createElement('div');d.className='tt-r';var i=document.createElement('i');i.style.background=r.color||'currentColor';var n=document.createElement('span');n.textContent=r.name;var v=document.createElement('b');v.textContent=r.value;d.append(i,n,v);box.appendChild(d)});
+    box.hidden=false;var hr=host.getBoundingClientRect(),bw=box.offsetWidth,bh=box.offsetHeight;
+    var x=clientX-hr.left+14,y=clientY-hr.top-bh-10;if(x+bw>hr.width-4)x=clientX-hr.left-bw-14;if(x<4)x=4;if(y<4)y=clientY-hr.top+16;
+    box.style.left=x+'px';box.style.top=y+'px';
+   },
+   hide:function(){box.hidden=true}
+  };
+ }
+ // opts: {W, left, right, top, bottom, tAt(svgX)->time, date(t)->string, dots(bool, default true),
+ //        series:[{name,color,pts:[{t,v}],x(t),y(v),fmt(v)}]}
+ function attach(svg,o){
+  if(svg._ethTrackOff)svg._ethTrackOff();
+  var host=o.host||svg.parentElement,tt=tip(host),dots=o.dots!==false;
+  var cross=document.createElementNS(NS,'line');cross.setAttribute('y1',o.top);cross.setAttribute('y2',o.bottom);cross.setAttribute('stroke','currentColor');cross.setAttribute('stroke-opacity','.45');cross.setAttribute('stroke-dasharray','3 3');cross.setAttribute('visibility','hidden');cross.setAttribute('pointer-events','none');svg.appendChild(cross);
+  var marks=o.series.map(function(s){var c=document.createElementNS(NS,'circle');c.setAttribute('r',4);c.setAttribute('fill',s.color);c.setAttribute('stroke','#0a1220');c.setAttribute('stroke-width',1.5);c.setAttribute('visibility','hidden');c.setAttribute('pointer-events','none');svg.appendChild(c);return c});
+  function move(e){
+   var r=svg.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*o.W;
+   if(sx<o.left||sx>o.right){leave();return}
+   var t=o.tAt(sx),rows=[],first=null;
+   o.series.forEach(function(s,i){if(!s.pts||!s.pts.length){marks[i].setAttribute('visibility','hidden');return}var p=near(s.pts,t);if(!first)first=p;
+    if(dots){marks[i].setAttribute('cx',s.x(p.t));marks[i].setAttribute('cy',s.y(p.v));marks[i].setAttribute('visibility','visible')}
+    rows.push({name:s.name,color:s.color,value:s.fmt(p.v)})});
+   if(!first)return;var cx=o.series[0].x(first.t);cross.setAttribute('x1',cx);cross.setAttribute('x2',cx);cross.setAttribute('visibility','visible');
+   tt.show(e.clientX,e.clientY,o.date(first.t),rows);
+  }
+  function leave(){cross.setAttribute('visibility','hidden');marks.forEach(function(m){m.setAttribute('visibility','hidden')});tt.hide()}
+  svg.addEventListener('pointermove',move);svg.addEventListener('pointerleave',leave);
+  svg._ethTrackOff=function(){svg.removeEventListener('pointermove',move);svg.removeEventListener('pointerleave',leave);tt.hide()};
+  return {leave:leave};
+ }
+ function ymd(t){return new Date(t).toISOString().slice(0,10)}
+ return {attach:attach,tip:tip,ymd:ymd};
+})();

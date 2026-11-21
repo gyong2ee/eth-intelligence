@@ -21,25 +21,36 @@
    var rows=j.rows||[];if(rows.length<2)throw Error('기록 없음');
    var end=rows[rows.length-1].t,pts=oiState.days?rows.filter(function(r){return r.t>=end-oiState.days*DAY}):rows;
    if(pts.length<2)pts=rows;
-   var W=Math.max(280,box.clientWidth||700),H=260,m={l:8,r:58,t:12,b:24};
-   var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':j.unit+' 미결제약정 추이'});
-   var lo=Math.min.apply(null,pts.map(function(p){return p.usd})),hi=Math.max.apply(null,pts.map(function(p){return p.usd}));
-   var pad=(hi-lo)*.08||hi*.05;lo=Math.max(0,lo-pad);hi+=pad;
-   var t0=pts[0].t,t1=pts[pts.length-1].t,X=function(t){return m.l+(t-t0)/(t1-t0)*(W-m.l-m.r)},Y=function(v){return m.t+(1-(v-lo)/(hi-lo))*(H-m.t-m.b)};
-   var st=niceStep((hi-lo)/4);
-   for(var g=Math.ceil(lo/st)*st;g<=hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:Y(g),y2:Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,Y(g)+4,usd(g)))}
+   // two stacked panels on one time axis: open interest (USD) on top, the coin's price below
+   var W=Math.max(280,box.clientWidth||700),H=330,m={l:8,r:64,t:12,b:24},gap=18,priceH=78;
+   var oiTop=m.t,oiBot=H-m.b-priceH-gap,pTop=oiBot+gap,pBot=H-m.b;
+   var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img','aria-label':j.unit+' 미결제약정과 가격 추이'});
+   var t0=pts[0].t,t1=pts[pts.length-1].t,X=function(t){return m.l+(t-t0)/(t1-t0)*(W-m.l-m.r)};
+   function scale(vals,top,bot,floor0){var lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals),pad=(hi-lo)*.08||hi*.05;lo=floor0?Math.max(0,lo-pad):lo-pad;hi+=pad;return {lo:lo,hi:hi,Y:function(v){return top+(1-(v-lo)/(hi-lo))*(bot-top)}}}
+   var A=scale(pts.map(function(p){return p.usd}),oiTop,oiBot,true),P=scale(pts.map(function(p){return p.price}),pTop,pBot,false);
+   var st=niceStep((A.hi-A.lo)/4);
+   for(var g=Math.ceil(A.lo/st)*st;g<=A.hi;g+=st){svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:A.Y(g),y2:A.Y(g),stroke:'var(--line)','stroke-opacity':.6}));svg.appendChild(txt(W-m.r+8,A.Y(g)+4,usd(g)))}
+   svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:pTop-gap/2,y2:pTop-gap/2,stroke:'var(--line)'}));
+   svg.appendChild(txt(W-m.r+8,P.Y(P.hi)+10,priceFmt(P.hi,oiState.sym),{'font-size':10.5}));svg.appendChild(txt(W-m.r+8,P.Y(P.lo),priceFmt(P.lo,oiState.sym),{'font-size':10.5}));
+   svg.appendChild(txt(m.l+2,oiTop+12,'미결제약정',{fill:'var(--accent)','font-size':11}));svg.appendChild(txt(m.l+2,pTop+12,j.unit+' 가격',{fill:'var(--fg)','font-size':11}));
    var n=W<480?3:5;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
-   var path='';pts.forEach(function(p,i){path+=(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.usd).toFixed(1)});
-   svg.appendChild(el('path',{d:path+'L'+X(t1)+' '+(H-m.b)+'L'+X(t0)+' '+(H-m.b)+'Z',fill:'var(--accent)','fill-opacity':.10}));
+   var path='';pts.forEach(function(p,i){path+=(i?'L':'M')+X(p.t).toFixed(1)+' '+A.Y(p.usd).toFixed(1)});
+   svg.appendChild(el('path',{d:path+'L'+X(t1)+' '+oiBot+'L'+X(t0)+' '+oiBot+'Z',fill:'var(--accent)','fill-opacity':.10}));
    svg.appendChild(el('path',{d:path,fill:'none',stroke:'var(--accent)','stroke-width':2,'stroke-linejoin':'round'}));
-   var last=pts[pts.length-1];svg.appendChild(el('circle',{cx:X(last.t),cy:Y(last.usd),r:4,fill:'var(--bg)',stroke:'var(--accent)','stroke-width':2}));
-   var cross=el('line',{y1:m.t,y2:H-m.b,stroke:'var(--muted)','stroke-dasharray':'3 3',visibility:'hidden'}),dot=el('circle',{r:4,fill:'var(--accent)',visibility:'hidden'});svg.appendChild(cross);svg.appendChild(dot);
-   var unit=j.unit,show=function(p){note.textContent=new Date(p.t).toISOString().slice(0,10)+' · '+usd(p.usd)+' · '+Math.round(p.oi).toLocaleString('en-US')+' '+unit+' · 가격 '+priceFmt(p.price,oiState.sym)};
-   svg.addEventListener('pointermove',function(e){var r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,t=t0+(x-m.l)/(W-m.l-m.r)*(t1-t0),best=pts[0];for(var i=1;i<pts.length;i++)if(Math.abs(pts[i].t-t)<Math.abs(best.t-t))best=pts[i];cross.setAttribute('x1',X(best.t));cross.setAttribute('x2',X(best.t));cross.setAttribute('visibility','visible');dot.setAttribute('cx',X(best.t));dot.setAttribute('cy',Y(best.usd));dot.setAttribute('visibility','visible');show(best)});
-   svg.addEventListener('pointerleave',function(){cross.setAttribute('visibility','hidden');dot.setAttribute('visibility','hidden');show(last)});
-   box.innerHTML='';box.appendChild(svg);show(last);
-   var first=pts[0],ch=(last.usd/first.usd-1)*100;
-   document.getElementById('oiLongStat').textContent='선택 기간 '+(ch>=0?'+':'')+ch.toFixed(1)+'% · 최고 '+usd(Math.max.apply(null,pts.map(function(p){return p.usd})))+' · 최저 '+usd(Math.min.apply(null,pts.map(function(p){return p.usd})));
+   var pp='';pts.forEach(function(p,i){pp+=(i?'L':'M')+X(p.t).toFixed(1)+' '+P.Y(p.price).toFixed(1)});
+   svg.appendChild(el('path',{d:pp,fill:'none',stroke:'var(--fg)','stroke-opacity':.8,'stroke-width':1.4,'stroke-linejoin':'round'}));
+   var last=pts[pts.length-1];
+   box.innerHTML='';box.appendChild(svg);
+   var unit=j.unit,byT=new Map(pts.map(function(p){return [p.t,p]}));
+   if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:oiTop,bottom:pBot,tAt:function(sx){return t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0)},date:ETHTrack.ymd,
+    series:[
+     {name:'미결제약정',color:'var(--accent)',pts:pts.map(function(p){return {t:p.t,v:p.usd}}),x:X,y:A.Y,fmt:function(v){return usd(v)}},
+     {name:unit+' 환산',color:'var(--accent)',pts:pts.map(function(p){return {t:p.t,v:p.oi}}),x:X,y:function(){return -50},fmt:function(v){return Math.round(v).toLocaleString('en-US')+' '+unit}},
+     {name:unit+' 가격',color:'var(--fg)',pts:pts.map(function(p){return {t:p.t,v:p.price}}),x:X,y:P.Y,fmt:function(v){return priceFmt(v,oiState.sym)}}
+    ]});
+   note.textContent='최신 '+new Date(last.t).toISOString().slice(0,10)+' · 미결제약정 '+usd(last.usd)+' ('+Math.round(last.oi).toLocaleString('en-US')+' '+unit+') · 가격 '+priceFmt(last.price,oiState.sym);
+   var first=pts[0],ch=(last.usd/first.usd-1)*100,pch=(last.price/first.price-1)*100;
+   document.getElementById('oiLongStat').textContent='선택 기간 미결제약정 '+(ch>=0?'+':'')+ch.toFixed(1)+'% · 가격 '+(pch>=0?'+':'')+pch.toFixed(1)+'% · 미결제약정 최고 '+usd(Math.max.apply(null,pts.map(function(p){return p.usd})))+' · 최저 '+usd(Math.min.apply(null,pts.map(function(p){return p.usd})));
   }).catch(function(e){box.innerHTML='<div class="empty">미결제약정 기록을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>';note.textContent=''});
  }
 

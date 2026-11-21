@@ -76,9 +76,10 @@
   svg.appendChild(gr);
   var lastIn=v.filter(function(q){return q.t<=w.b}).pop();
   if(lastIn)svg.appendChild(el('circle',{cx:X(lastIn.t),cy:Y(lastIn.v),r:3.5,fill:C.ink,stroke:this.o.color,'stroke-width':2}));
-  this.cross=el('line',{y1:m.t,y2:H-m.b,stroke:C.text,'stroke-dasharray':'3 3',visibility:'hidden'});this.dot=el('circle',{r:4,fill:this.o.color,visibility:'hidden'});
-  svg.appendChild(this.cross);svg.appendChild(this.dot);
-  this.geo={X:X,Y:Y,m:m,W:W,H:H};this.showLatest();
+  this.cross=null;this.geo={X:X,Y:Y,m:m,W:W,H:H};this.showLatest();
+  var self=this,o=this.o;
+  if(window.ETHTrack)ETHTrack.attach(svg,{W:W,left:m.l,right:W-m.r,top:m.t,bottom:H-m.b,tAt:function(sx){return w.a+(sx-m.l)/(W-m.l-m.r)*(w.b-w.a)},
+   date:function(t){return new Date(t).toISOString().slice(0,7)},series:[{name:o.name,color:o.color,pts:v.filter(function(q){return q.t>=w.a&&q.t<=w.b}),x:X,y:Y,fmt:o.fmtTip}]});
  };
  Chart.prototype.showLatest=function(){if(!this.tip)return;var p=this.pts[this.pts.length-1];this.tip.textContent=this.o.name+' · '+new Date(p.t).toISOString().slice(0,10)+' · '+this.o.fmtTip(p.v)};
  Chart.prototype.drawNav=function(){
