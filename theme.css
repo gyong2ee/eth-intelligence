@@ -1,0 +1,100 @@
+/* ETH Intelligence theme: minimal navy ink, soft green and brass accents, rounded cards, faint ETH mark.
+   Loaded last on every page, so it only restyles; layout rules above it stay in charge. */
+:root{
+  --ink:#0a1220; --paper:#0f1a2b; --paper2:#13213a; --rule:#22324d; --rule2:#2d4163;
+  --text:#ece6d6; --soft:#98a4b8; --dim:#6c7a90;
+  --note:#6fbfa8; --note-deep:#2f6f61; --brass:#c9a45c; --brass-dim:#8a7140; --ebb:#e2735c;
+  --serif:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --num:"Inter","Noto Sans KR",system-ui,sans-serif;
+  --sans:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--ink)!important;color:var(--text)!important;font-family:var(--sans)!important;-webkit-font-smoothing:antialiased;line-height:1.6}
+section,main>nav{background:rgba(15,26,43,.82)!important;border:1px solid var(--rule)!important;border-radius:18px!important;box-shadow:none!important}
+h1,h2,h3{font-family:var(--serif);letter-spacing:-.01em;color:var(--text)}
+h2{font-weight:700} h3{font-weight:700}
+.value{font-family:var(--num);font-weight:600!important;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+small,main>p{color:var(--soft)!important}
+a{color:var(--brass)}
+a:hover{color:var(--text)}
+button,input,select{background:transparent!important;color:var(--text)!important;border:1px solid var(--rule2)!important;border-radius:999px!important;font-family:var(--sans)}
+button{cursor:pointer;letter-spacing:.02em}
+button:hover{border-color:var(--brass)!important;color:var(--brass)!important}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+input[type=checkbox]{accent-color:var(--brass)}
+td,th{border-bottom:1px solid var(--rule)!important}
+th{font-family:var(--serif);color:var(--soft);font-weight:600}
+.tradingview-widget-container{border-radius:12px!important}
+
+/* title + faint ETH mark behind the page */
+main>h1{font-family:var(--serif)!important;font-weight:700!important;letter-spacing:-.02em}
+main>h1 svg path{fill:var(--text)!important}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2036%22%3E%3Cpath%20d%3D%22M12%201L1%2018l11-5.2L23%2018%2012%201Z%22%20fill%3D%22%23ece6d6%22/%3E%3Cpath%20d%3D%22M1%2020.5%2012%2035l11-14.5-11%206.3L1%2020.5Z%22%20fill%3D%22%23ece6d6%22/%3E%3Cpath%20d%3D%22M1%2018%2012%2012.8V25L1%2018Z%22%20fill%3D%22%23ece6d6%22%20fill-opacity%3D%22.7%22/%3E%3Cpath%20d%3D%22M23%2018%2012%2012.8V25l11-7Z%22%20fill%3D%22%23ece6d6%22%20fill-opacity%3D%22.45%22/%3E%3C/svg%3E") center 45%/min(40vw,420px) no-repeat;opacity:.035}
+
+/* feature menu */
+.feature-nav{background:var(--paper)!important;border:1px solid var(--rule)!important;border-radius:16px!important;box-shadow:none!important}
+.feature-nav summary{font-family:var(--serif)}
+.feature-item{background:var(--paper2)!important;border:1px solid var(--rule)!important;border-radius:10px!important}
+.feature-item a{color:var(--text)!important}
+.feature-item input{accent-color:var(--brass)!important}
+
+/* desktop sidebar: a bulletin index */
+@media(min-width:1100px){
+ #desktopSidebar{background:var(--paper)!important;border-right:1px solid var(--rule2)!important;box-shadow:none!important}
+ #desktopSidebar .side-brand{font-family:var(--serif)!important;font-weight:700!important}
+ #desktopSidebar .side-brand span{color:var(--text)!important}
+ #desktopSidebar .side-brand svg path{fill:var(--brass)!important}
+ #desktopSidebar .side-group{color:var(--dim)!important;font-weight:600!important;letter-spacing:.08em!important;font-size:11px!important}
+ #desktopSidebar a{color:var(--soft)!important;border-radius:10px!important;font-weight:500!important}
+ #desktopSidebar a:hover,#desktopSidebar a:focus-visible{background:var(--paper2)!important;color:var(--text)!important}
+ #desktopSidebar a.active{background:var(--paper2)!important;color:var(--text)!important}
+ #desktopSidebar .side-footer a{border:1px solid var(--rule)!important}
+}
+
+/* summary tiles read like a bulletin's key figures */
+#summaryCards>div{background:var(--paper2);border:0;padding:14px 16px;border-radius:14px}
+#summaryCards small{letter-spacing:.04em}
+
+/* macro page */
+body>main>nav,main>nav{gap:24px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* macro section layout: M2 | M2 YoY, then 2Y | 10Y | overlay, then WTI : VIX = 3 : 2 */
+.m2pair{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:24px!important;min-width:0}
+.m2pair>div{min-width:0}
+.m2pair-yoy{border-left:1px solid var(--rule);padding-left:24px}
+.yield-trio{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.wti-vix{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:12px;align-items:stretch}
+.wti-vix>section{min-width:0;margin:14px 0}
+#vixHistory>div:first-child{flex-direction:column;align-items:flex-start!important}
+#vixHistory>div:first-child>div{text-align:left!important}
+@media(max-width:900px){
+ .yield-trio{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .yield-trio>.yield-overlay{grid-column:1/-1}
+ .wti-vix{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+ .m2pair{grid-template-columns:1fr!important}
+ .m2pair-yoy{border-left:0;padding-left:0;border-top:1px solid var(--rule);padding-top:12px}
+}
+
+/* M2 charts (m2chart.js): main chart + full-period navigator */
+.xchart{position:relative;min-width:0}
+.xchart svg{display:block;width:100%;user-select:none;-webkit-user-select:none}
+.xc-main{cursor:grab;touch-action:pan-y}
+.xc-main.dragging,.xc-nav.dragging{cursor:grabbing!important}
+.xc-nav-wrap{margin:8px 0 4px;padding:6px 8px 8px;border:1px solid var(--rule);border-radius:10px;background:rgba(10,18,32,.5)}
+.xc-nav-label{display:flex;justify-content:space-between;font:500 11px/1.4 Inter,"Noto Sans KR",sans-serif;color:var(--dim);margin-bottom:4px}
+.xc-nav{touch-action:none;cursor:pointer}
+.xc-tip{font:500 13px/1.5 Inter,"Noto Sans KR",sans-serif;color:var(--text);min-height:1.5em;margin:6px 0 0}
+.xc-empty{color:var(--soft);font-size:13px;padding:40px 0;text-align:center}
+.macroRanges button.on,.macroRanges button[aria-pressed="true"]{border-color:var(--brass)!important;color:var(--brass)!important}
+
+/* ETH staking APR cards, beside the staking ratio */
+.staking-apy{margin:6px 0 16px}
+.staking-apy .sa-title{display:block;font-size:13px;color:var(--soft);margin-bottom:8px}
+.sa-row{display:flex;gap:10px;flex-wrap:wrap}
+.sa-card{min-width:150px;padding:12px 14px;border:1px solid var(--rule);border-radius:14px;background:var(--paper2);display:grid;gap:2px}
+.sa-card b{font:600 22px/1.2 Inter,"Noto Sans KR",sans-serif;letter-spacing:-.02em;color:var(--text)}
+.sa-card .sa-note{font-size:11.5px;color:var(--dim)!important}
+.sa-empty{font-size:13px;color:var(--soft)}
