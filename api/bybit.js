@@ -72,6 +72,7 @@ async function longShort(symbol){
    .then(async r=>{const j=await r.json();if(!r.ok||!Array.isArray(j))throw Error('Binance HTTP '+r.status);return j.map(x=>({t:+x.timestamp,long:+x.longAccount*100})).filter(x=>Number.isFinite(x.long)).sort((a,b)=>a.t-b.t)})
  ]);
  const out={symbol,unit:'% of accounts long',errors:{}};
+ try{out.price=(await klines(symbol,'D',Date.now()-520*D,1000)).map(k=>({t:k.t,v:k.c}))}catch(e){out.price=[];out.errors.price=e.message}
  if(by.status==='fulfilled')out.bybit=by.value;else{out.bybit=[];out.errors.bybit=by.reason.message}
  if(bn.status==='fulfilled')out.binance=bn.value;else{out.binance=[];out.errors.binance=bn.reason.message}
  if(!out.bybit.length&&!out.binance.length)throw Error('no long/short data');
