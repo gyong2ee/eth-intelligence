@@ -64,14 +64,32 @@
    [-20,-10,0,10,20].forEach(function(pc){var p=price*(1+pc/100);svg.appendChild(txt(X(p),H-7,(pc===0?'':(pc>0?'+':''))+(pc===0?priceFmt(p,liqSym):pc+'%'),{'text-anchor':'middle',fill:pc===0?'var(--fg)':'var(--muted)'}))});
    svg.appendChild(el('line',{x1:X(price),x2:X(price),y1:m.t-6,y2:H-m.b,stroke:'var(--fg)','stroke-width':1.5,'stroke-dasharray':'4 3'}));
    var hl=el('rect',{y:m.t,height:H-m.t-m.b,width:bw,fill:'var(--fg)','fill-opacity':.08,visibility:'hidden'});svg.appendChild(hl);
+   var cursor=el('line',{y1:m.t-6,y2:H-m.b,stroke:'var(--accent)','stroke-width':1.2,visibility:'hidden'});svg.appendChild(cursor);
    var sumL=rows.filter(function(r){return r.price<price}).reduce(function(a,r){return a+r.long},0),sumS=rows.filter(function(r){return r.price>price}).reduce(function(a,r){return a+r.short},0);
    var big=function(side){return rows.slice().sort(function(a,b){return b[side]-a[side]})[0]};
    var bl=big('long'),bs=big('short');
    var base='현재가 '+priceFmt(price,liqSym)+' · 아래쪽 롱 청산 대기 '+usd(sumL)+' (최대 '+priceFmt(bl.price,liqSym)+') · 위쪽 숏 청산 대기 '+usd(sumS)+' (최대 '+priceFmt(bs.price,liqSym)+')';
    note.textContent=base;
-   svg.addEventListener('pointermove',function(e){var r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,p=pLo+(x-m.l)/(W-m.l-m.r)*(pHi-pLo),best=rows[0];rows.forEach(function(q){if(Math.abs(q.price-p)<Math.abs(best.price-p))best=q});hl.setAttribute('x',X(best.price)-bw/2);hl.setAttribute('visibility','visible');var pc=(best.price/price-1)*100;note.textContent=priceFmt(best.price,liqSym)+' ('+(pc>=0?'+':'')+pc.toFixed(1)+'%) · 롱 청산 '+usd(best.long)+' · 숏 청산 '+usd(best.short)});
-   svg.addEventListener('pointerleave',function(){hl.setAttribute('visibility','hidden');note.textContent=base});
-   box.innerHTML='';box.appendChild(svg);
+   var tip=document.createElement('div');tip.className='liq-tip';tip.hidden=true;
+   var half=j.step/2;
+   svg.addEventListener('pointermove',function(e){
+    var r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W;
+    if(x<m.l||x>W-m.r){tip.hidden=true;cursor.setAttribute('visibility','hidden');hl.setAttribute('visibility','hidden');return}
+    var p=pLo+(x-m.l)/(W-m.l-m.r)*(pHi-pLo),pc=(p/price-1)*100;
+    cursor.setAttribute('x1',x);cursor.setAttribute('x2',x);cursor.setAttribute('visibility','visible');
+    var bin=null;rows.forEach(function(q){if(Math.abs(q.price-p)<=half&&(!bin||Math.abs(q.price-p)<Math.abs(bin.price-p)))bin=q});
+    if(bin){hl.setAttribute('x',X(bin.price)-bw/2);hl.setAttribute('visibility','visible')}else hl.setAttribute('visibility','hidden');
+    var side=p<price?'롱':'숏',amt=bin?(p<price?bin.long:bin.short):0;
+    tip.innerHTML='';var b=document.createElement('b');b.textContent=priceFmt(p,liqSym);
+    var s1=document.createElement('span');s1.textContent='현재가 대비 '+(pc>=0?'+':'')+pc.toFixed(1)+'%';
+    var s2=document.createElement('span');s2.textContent=amt?(side+' 청산 추정 '+usd(amt)):'이 가격대 청산 물량 거의 없음';
+    tip.append(b,s1,s2);tip.hidden=false;
+    var bx=box.getBoundingClientRect(),left=e.clientX-bx.left,top=e.clientY-bx.top;
+    tip.style.left=Math.min(Math.max(left,70),bx.width-70)+'px';tip.style.top=Math.max(top-12,8)+'px';
+    note.textContent=bin?priceFmt(bin.price,liqSym)+' 구간 · 롱 청산 '+usd(bin.long)+' · 숏 청산 '+usd(bin.short):base;
+   });
+   svg.addEventListener('pointerleave',function(){hl.setAttribute('visibility','hidden');cursor.setAttribute('visibility','hidden');tip.hidden=true;note.textContent=base});
+   box.innerHTML='';box.appendChild(svg);box.appendChild(tip);
    document.getElementById('liqTime').textContent=new Date(j.updated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' 기준';
    document.getElementById('liqLink').href='https://www.coinglass.com/pro/futures/LiquidationHeatMap?coin='+(liqSym==='BTCUSDT'?'BTC':'ETH');
   }).catch(function(e){box.innerHTML='<div class="empty">청산맵을 계산하지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>';note.textContent=''});
