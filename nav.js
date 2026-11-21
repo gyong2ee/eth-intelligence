@@ -19,6 +19,8 @@
   var nav=document.createElement('nav');nav.className='site-tabs';nav.setAttribute('aria-label','페이지');
   PAGES.forEach(function(p){var a=document.createElement('a');a.href=p.href;a.textContent=p.label;if(p===page)a.setAttribute('aria-current','page');nav.appendChild(a)});
   host.insertBefore(nav,host.firstChild);
+  // keeps the page from jumping under the fixed tab bar on phones (hidden on desktop)
+  var sp=document.createElement('div');sp.className='site-tabs-spacer';sp.setAttribute('aria-hidden','true');nav.after(sp);
  }
  function side(){
   var existing=document.getElementById('desktopSidebar');

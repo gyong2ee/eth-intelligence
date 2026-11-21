@@ -32,8 +32,9 @@ regions, so keep that setting.
   `@media (max-width:760px)` blocks (end of `theme.css` / `nav.css`), and compare desktop
   before/after when changing them.
 - On phones every TradingView chart is the ETH chart's height (520px); summary tiles are 2×2;
-  the 2Y/10Y/overlay row stacks one per row; the back-to-top button is smaller and shows after
-  scrolling.
+  fear & greed and MVRV share a row; the four staking APR cards share a row; 2Y and 10Y share a
+  row with the overlay chart full width below; the back-to-top button is smaller and shows after
+  scrolling; the top tabs use position:fixed (sticky fails in iOS Safari / in-app browsers).
 
 ## Navigation
 
