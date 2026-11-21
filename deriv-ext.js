@@ -123,7 +123,7 @@
    svg.appendChild(dual?txt(m.l-8,L.Y(g)+4,o.fy(g),{'text-anchor':'end'}):txt(W-m.r+8,L.Y(g)+4,o.fy(g)))}
   if(R){var rs=niceStep((R.hi-R.lo)/4);for(var q=Math.ceil(R.lo/rs)*rs;q<=R.hi;q+=rs)svg.appendChild(txt(W-m.r+8,R.Y(q)+4,o.fyR(q),{fill:'var(--fg)','fill-opacity':.75}))}
   if(o.base!=null)svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:L.Y(o.base),y2:L.Y(o.base),stroke:'var(--muted)','stroke-dasharray':'4 4'}));
-  var n=W<480?3:5;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
+  var n=W<480?3:5,shortSpan=(t1-t0)<120*DAY;for(var k=0;k<n;k++){var t=t0+(t1-t0)*k/(n-1),d=new Date(t);svg.appendChild(txt(X(t),H-6,shortSpan?(d.getUTCMonth()+1)+'/'+d.getUTCDate():(d.getUTCFullYear()+'').slice(2)+'.'+String(d.getUTCMonth()+1).padStart(2,'0'),{'text-anchor':k===0?'start':k===n-1?'end':'middle'}))}
   series.forEach(function(s,i){var Y=(s.axis==='R'?R:L).Y,path='';s.pts.forEach(function(p,j){path+=(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)});
    if(i===0&&o.fill)svg.appendChild(el('path',{d:path+'L'+X(s.pts[s.pts.length-1].t)+' '+(H-m.b)+'L'+X(s.pts[0].t)+' '+(H-m.b)+'Z',fill:s.color,'fill-opacity':.1}));
    svg.appendChild(el('path',{d:path,fill:'none',stroke:s.color,'stroke-width':s.w||2,'stroke-linejoin':'round','stroke-opacity':s.opacity||1}))});
