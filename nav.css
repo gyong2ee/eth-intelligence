@@ -1,0 +1,29 @@
+/* Shared site navigation: page tabs on top, the current page's section list on the left (desktop). */
+.site-tabs{display:flex!important;gap:4px!important;margin:0 0 18px!important;padding:0!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+ position:static!important;inset:auto!important;width:auto!important;max-width:100%!important;transform:none!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;z-index:auto!important}
+.site-tabs::-webkit-scrollbar{display:none}
+.site-tabs a{flex:none;color:#98a4b8!important;text-decoration:none!important;font:500 13.5px/1 "Noto Sans KR",system-ui,sans-serif;padding:9px 14px;border-radius:999px;white-space:nowrap}
+.site-tabs a:hover{color:#ece6d6!important;background:rgba(236,230,214,.05)}
+.site-tabs a[aria-current="page"]{background:rgba(236,230,214,.09);color:#ece6d6!important;font-weight:700}
+.site-tabs a:focus-visible{outline:2px solid #c9a45c;outline-offset:2px}
+
+.page-head{margin:0 0 18px}
+.page-head .kicker,.site-kicker{display:block;font:500 13px/1.4 "Noto Sans KR",system-ui,sans-serif;color:#98a4b8;margin-bottom:4px;letter-spacing:0}
+
+.site-side{display:none}
+@media(min-width:1100px){
+ body.has-side{padding-left:296px!important}
+ .site-side{display:flex!important;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:260px;box-sizing:border-box;z-index:90;overflow-y:auto;
+  padding:26px 14px 22px!important;background:#0c1524!important;border-right:1px solid #1d2a40!important;box-shadow:none!important;font-family:"Noto Sans KR",system-ui,sans-serif}
+ .site-side .side-brand{display:flex;align-items:center;gap:9px;padding:4px 11px 6px!important;font:700 17px/1.3 "Noto Sans KR",system-ui,sans-serif!important;color:#ece6d6!important;letter-spacing:-.02em;border:0!important;margin:0!important}
+ .site-side .side-brand span{color:#ece6d6!important}
+ .site-side .side-brand svg path{fill:#ece6d6!important}
+ .site-side .side-page{padding:0 11px 14px;font-size:12.5px;color:#6c7a90}
+ .site-side .side-group{margin:14px 0 4px!important;padding:0 11px!important;color:#6c7a90!important;font-size:11.5px!important;font-weight:600!important;letter-spacing:.04em!important;text-transform:none!important}
+ .site-side a{display:block;text-decoration:none!important;color:#98a4b8!important;padding:9px 12px!important;margin:1px 0!important;border-radius:10px!important;font-size:13.5px!important;font-weight:500!important;border:0!important;background:transparent}
+ .site-side a:hover,.site-side a:focus-visible{background:rgba(236,230,214,.05)!important;color:#ece6d6!important}
+ .site-side a.active{background:rgba(236,230,214,.09)!important;color:#ece6d6!important}
+ .site-side .side-footer{margin-top:auto;padding-top:14px}
+ .site-side .side-footer a{border:1px solid #1d2a40!important}
+}
+@media (prefers-reduced-motion:reduce){.site-tabs a,.site-side a{transition:none}}

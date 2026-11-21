@@ -1,4 +1,5 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style><title>글로벌 유동성</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}[id]{scroll-margin-top:16px}
+</style><link rel="stylesheet" href="/nav.css"><script src="/nav.js" defer></script><title>글로벌 유동성</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Inter:wght@500;600;700&display=swap">
@@ -114,14 +115,9 @@ button{border-radius:999px}
 .colophon{border-top:1px solid var(--rule);grid-template-columns:1fr}
 .code{color:var(--soft)}
 
-.sitenav{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 4px}
-.sitenav a{color:var(--soft);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:999px}
-.sitenav a:hover{color:var(--text)}
-.sitenav a[aria-current]{background:rgba(236,230,214,.08);color:var(--text)}
 </style>
 
 <div class="wrap">
-  <nav class="sitenav" aria-label="사이트 메뉴"><a href="/">시장 개요</a><a href="/derivatives.html">파생상품</a><a href="/liquidity.html" aria-current="page">글로벌 유동성</a><a href="/macro.html">거시경제</a></nav>
   <header class="top">
     <div><span class="kicker">ETH Intelligence</span><h1>글로벌 유동성</h1></div>
     <div class="st"><span id="obsDate"></span><span class="lamp" id="lamp"></span><span id="statusText">연결 대기</span><button id="refresh" type="button">새로고침</button></div>
@@ -129,7 +125,7 @@ button{border-radius:999px}
 
   <div class="banner" id="banner" hidden></div>
 
-  <section class="station" aria-label="오늘의 판정">
+  <section class="station" id="verdict-sec" aria-label="오늘의 판정">
     <div class="verdict-box">
       <span class="cap">지금 세계 유동성</span>
       <p class="verdict" id="verdict"><span class="tide">관측 중</span></p>
@@ -139,12 +135,12 @@ button{border-radius:999px}
     </div>
   </section>
 
-  <section style="display:grid;gap:12px">
+  <section id="instruments" style="display:grid;gap:12px">
     <div class="sec-head"><h2>지표 8개</h2><span class="cap">밀물 · 정조 · 썰물</span></div>
     <div class="log" id="log"></div>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="main">
     <div class="sec-head" style="border:0;padding:0">
       <h2 id="mainTitle">연준 순유동성</h2>
       <div class="tabs" id="mainTabs">
@@ -158,11 +154,11 @@ button{border-radius:999px}
   </section>
 
   <section class="grid5">
-    <div class="panel wide"><h3>재무부 통장 · TGA</h3><p class="sub">정부가 연준에 넣어 둔 현금. 늘면 시중 돈을 빨아들입니다.</p><div class="chart" id="tgaChart"><div class="empty">관측 중</div></div></div>
-    <div class="panel wide"><h3>역레포 · RRP</h3><p class="sub">금융기관이 연준에 맡긴 여윳돈. 줄면 시장으로 풀려 나옵니다.</p><div class="chart" id="rrpChart"><div class="empty">관측 중</div></div></div>
-    <div class="panel"><h3>달러 인덱스</h3><p class="sub">달러가 강하면 세계 돈줄이 조여집니다.</p><div class="chart" id="dxyChart"><div class="empty">관측 중</div></div></div>
-    <div class="panel"><h3>미국 10년물 금리</h3><p class="sub">오르면 위험자산 매력이 줄어듭니다.</p><div class="chart" id="y10Chart"><div class="empty">관측 중</div></div></div>
-    <div class="panel"><h3>이더리움 DeFi 예치금</h3><p class="sub">이더리움 앱에 맡겨진 돈(TVL).</p><div class="chart" id="tvlChart"><div class="empty">관측 중</div></div></div>
+    <div class="panel wide" id="tga"><h3>재무부 통장 · TGA</h3><p class="sub">정부가 연준에 넣어 둔 현금. 늘면 시중 돈을 빨아들입니다.</p><div class="chart" id="tgaChart"><div class="empty">관측 중</div></div></div>
+    <div class="panel wide" id="rrp"><h3>역레포 · RRP</h3><p class="sub">금융기관이 연준에 맡긴 여윳돈. 줄면 시장으로 풀려 나옵니다.</p><div class="chart" id="rrpChart"><div class="empty">관측 중</div></div></div>
+    <div class="panel" id="dxy"><h3>달러 인덱스</h3><p class="sub">달러가 강하면 세계 돈줄이 조여집니다.</p><div class="chart" id="dxyChart"><div class="empty">관측 중</div></div></div>
+    <div class="panel" id="y10"><h3>미국 10년물 금리</h3><p class="sub">오르면 위험자산 매력이 줄어듭니다.</p><div class="chart" id="y10Chart"><div class="empty">관측 중</div></div></div>
+    <div class="panel" id="tvl"><h3>이더리움 DeFi 예치금</h3><p class="sub">이더리움 앱에 맡겨진 돈(TVL).</p><div class="chart" id="tvlChart"><div class="empty">관측 중</div></div></div>
   </section>
 
   <footer class="colophon">

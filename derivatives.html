@@ -1,4 +1,5 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style><title>ETH 파생상품</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}section[id]{scroll-margin-top:16px}
+</style><link rel="stylesheet" href="/nav.css"><script src="/nav.js" defer></script><title>ETH 파생상품</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Inter:wght@500;600;700&display=swap">
@@ -100,14 +101,9 @@ svg text{font-family:var(--f-body)}
 .stats b,dd{font-weight:600}
 
 
-.sitenav{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 4px}
-.sitenav a{color:var(--muted);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:999px}
-.sitenav a:hover{color:var(--fg)}
-.sitenav a[aria-current]{background:rgba(236,230,214,.08);color:var(--fg)}
 </style>
 
 <div class="wrap">
-  <nav class="sitenav" aria-label="사이트 메뉴"><a href="/">시장 개요</a><a href="/derivatives.html" aria-current="page">파생상품</a><a href="/liquidity.html">글로벌 유동성</a><a href="/macro.html">거시경제</a></nav>
   <header>
     <h1><small>ETH Intelligence</small>ETH 파생상품</h1>
     <div class="bar">
@@ -118,7 +114,7 @@ svg text{font-family:var(--f-body)}
 
   <div id="banner" hidden></div>
 
-  <section class="tape" aria-label="핵심 지표">
+  <section class="tape" id="summary" aria-label="핵심 지표">
     <div>
       <span class="label">전체 미결제약정 · CMC</span>
       <span class="big num" id="kOi">—</span>
@@ -136,7 +132,7 @@ svg text{font-family:var(--f-body)}
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="oi">
     <div class="panel-head">
       <h2>미결제약정 추이</h2>
       <span class="note">GitHub Actions 매시간 수집 기록 + 현재 실시간 값(점선)</span>
@@ -155,7 +151,7 @@ svg text{font-family:var(--f-body)}
   </section>
 
   <div class="two">
-    <section class="panel">
+    <section class="panel" id="flow">
       <div class="panel-head"><h2>가격과 미결제약정 흐름</h2><span class="note">24시간 방향 기준</span></div>
       <div class="matrix">
         <div></div><div class="ax">가격 ▲</div><div class="ax">가격 ▼</div>
@@ -169,7 +165,7 @@ svg text{font-family:var(--f-body)}
       <p class="read" id="quadRead">가격과 OI 데이터를 불러오는 중입니다.</p>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="funding">
       <div class="panel-head"><h2>펀딩비 수준</h2><span class="note">기준선 0.01% / 8h</span></div>
       <div class="scale" aria-hidden="true">
         <div class="track"></div>
@@ -189,19 +185,19 @@ svg text{font-family:var(--f-body)}
   </div>
 
   <div class="two">
-    <section class="panel">
+    <section class="panel" id="binance">
       <div class="panel-head"><h2>Binance 펀딩비 · 30일</h2><span class="note num" id="bnNote">8시간마다 정산</span></div>
       <div class="chart-wrap"><div class="empty" id="bnEmpty">Binance 펀딩비 기록을 불러오는 중입니다.</div><svg id="bnChart" width="100%" height="200" role="img" aria-label="Binance 펀딩비 추이" hidden></svg></div>
       <p class="note" id="bnRead"></p>
     </section>
-    <section class="panel">
-      <div class="panel-head"><h2>Bybit OI · 7일 시간별</h2><span class="note num" id="byNote">ETH 단위</span></div>
+    <section class="panel" id="bybit">
+      <div class="panel-head"><h2>Bybit 미결제약정 · 7일 시간별</h2><span class="note num" id="byNote">ETH 단위</span></div>
       <div class="chart-wrap"><div class="empty" id="byEmpty">Bybit OI 기록을 불러오는 중입니다.</div><svg id="byChart" width="100%" height="200" role="img" aria-label="Bybit 미결제약정 추이" hidden></svg></div>
       <p class="note" id="byRead"></p>
     </section>
   </div>
 
-  <section class="panel">
+  <section class="panel" id="sources">
     <div class="panel-head"><h2>데이터 소스 상태</h2></div>
     <div class="src" id="src"></div>
   </section>
