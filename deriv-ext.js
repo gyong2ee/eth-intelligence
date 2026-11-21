@@ -170,10 +170,12 @@
    var tone=function(v){return v>=60?'down':v<=40?'up':''};
    if(by.length){var l=by[by.length-1].long;card('Bybit 롱 계정',l.toFixed(1)+'%','숏 '+(100-l).toFixed(1)+'% · 롱/숏 '+(l/(100-l)).toFixed(2),tone(l))}
    if(bn.length){var b2=bn[bn.length-1].long;card('Binance 롱 계정',b2.toFixed(1)+'%','숏 '+(100-b2).toFixed(1)+'% · 롱/숏 '+(b2/(100-b2)).toFixed(2),tone(b2))}
+   var tp=(j.binanceTop||[]);if(tp.length){var t3=tp[tp.length-1].long;card('Binance 큰손 · 금액 기준',t3.toFixed(1)+'%','상위 트레이더 포지션 금액 중 롱 비중 · 롱/숏 '+(t3/(100-t3)).toFixed(2),tone(t3))}
    var coin=lsSym.replace('USDT',''),px=(j.price||[]).filter(function(x){return x.t>=end-365*DAY});
    lineChart(box,[
     {name:'Bybit 롱 계정',color:'var(--accent)',pts:yr.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'}},
     {name:'Binance 롱 계정',color:'var(--up)',pts:bn.map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4},
+    {name:'Binance 큰손(금액)',color:'#5b8def',pts:(j.binanceTop||[]).map(function(x){return {t:x.t,v:x.long}}),fmt:function(v){return v.toFixed(1)+'%'},w:2.4},
     {name:coin+' 가격',color:'var(--fg)',axis:'R',opacity:.75,w:1.4,pts:px,fmt:function(v){return priceFmt(v,lsSym)}}
    ],{label:'롱 계정 비율과 가격',h:260,fy:function(v){return v.toFixed(0)+'%'},fyR:function(v){return priceFmt(v,lsSym)},base:50});
   }).catch(function(e){box.innerHTML='<div class="empty">롱/숏 비율을 불러오지 못했습니다 ('+String(e.message).replace(/</g,'&lt;')+')</div>'});
