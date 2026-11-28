@@ -20,10 +20,19 @@ regions, so keep that setting.
 
 ## Look and feel
 
-- Minimal, dark navy (`#0a1220`), rounded cards, faint ETH logo in the background.
-- Fonts: Noto Sans KR for text, Inter for numbers (including canvas/SVG chart labels).
-- Colors per rate maturity: 3M violet `#9b8cff`, 2Y gold `#c9a45c`, 10Y green `#6fbfa8`,
-  30Y blue `#5b8def`, EFFR off-white `#ece6d6`. Up/ease green `#6fbfa8`, down/tight `#e2735c`.
+- Sharplink-style black theme, styled in `sharp.css` (linked last on every page, so it overrides
+  page styles): a blue glow behind the top of the page fading into near-black `#05070c`, big light
+  white headlines, uppercase kicker with a small blue square, dark glass square cards
+  (`rgba(14,19,29,.78)`, hairline `rgba(255,255,255,.08)` borders), white chip labels on key
+  figures, black sidebar. Accent `#0e76ff`. Square corners, no shadows. Selected buttons are white
+  with black text. The whole site stays dark; no light sections.
+- Fonts: Noto Sans KR for Korean text, Archivo for headings and numbers (including canvas/SVG
+  chart labels).
+- Base palette: bg `#05070c`, card `#0b0f17`, raised `#111723`, rules `#1c2330`/`#2a3344`,
+  text `#eef1f6`, soft `#8d96a6`, dim `#687183`, accent `#3d8bff`.
+- Colors per rate maturity: 3M violet `#9b8cff`, 2Y blue `#3d8bff`, 10Y green `#6fbfa8`,
+  30Y blue `#5b8def`, EFFR white `#eef1f6`. Up/ease green `#6fbfa8`, down/tight `#e2735c`.
+- TradingView widgets use `"theme":"dark"` with background `#0b0f17`.
 - Write UI copy in Korean, plain and short. Mark modeled numbers as "추정".
 
 ## Mobile
@@ -40,8 +49,17 @@ regions, so keep that setting.
 
 ## Navigation
 
-- Top tabs (sticky): 시장 개요 · 파생상품 · 글로벌 유동성. Left list shows the current page's
-  sections (desktop). Both come from `nav.js`; add new sections to `SECTIONS` there.
+- Fixed top bar on every page (`nav.js`, styled in `sharp.css`): ETH mark + "ETH Intelligence" on
+  the left, square menu 시장 개요 · 파생상품 · 글로벌 유동성 on the right (current page has a blue square).
+  Left list shows the current page's sections (desktop), below the bar; add sections to `SECTIONS`.
+- Start page hero (`index.html` top, `hero.js` module): big title, a three.js ETH solid
+  (satin-silver octahedron with a dashed inner frame + gunmetal chrome lower pyramid, no glass
+  transmission) spinning on an axis tilted 20° (~5 s per turn, angle taken from the wall clock),
+  over static upright (no tilt or diagonal warp) "+" contour tubes — each one the same rounded
+  "+" scaled up (not distance offsets, which round out into circles), fading radially into the page shaded per pixel once into a 2D canvas (`.hero-waves`).
+- Performance: no `backdrop-filter` anywhere (sharp.css disables it globally) and no animated
+  background; both made the spinning logo stutter. (three.js from jsDelivr via an import map; SVG fallback without WebGL),
+  and an Events carousel read from `data/events.json` (KST times; past events hide themselves).
 - Fixed back-to-top button bottom right (also from `nav.js`).
 
 ## Data

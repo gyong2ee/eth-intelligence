@@ -1,0 +1,187 @@
+/* Sharplink-style black theme, loaded last on every page so it wins over each page's <style>.
+   Night-navy -> blue glow at the top of the page, fading into near-black; dark glass square
+   cards with hairline borders; big light white headlines; blue square markers. Layout untouched. */
+:root{
+  --sh-night:#05070c; --sh-deep:#0b1a38; --sh-glow:#1f4fa8; --sh-blue:#0e76ff; --sh-blue2:#3d8bff;
+  --sh-card:#0c1019; --sh-card2:#111723; --sh-text:#eef1f6; --sh-soft:#8d96a6; --sh-dim:#687183;
+  --sh-line:rgba(255,255,255,.08); --sh-line2:rgba(255,255,255,.16);
+  --sh-head:"Archivo","Noto Sans KR",system-ui,sans-serif;
+  color-scheme:dark;
+}
+
+/* ---------- page background: blue glow at the top, then black ---------- */
+html body{
+  background:
+    radial-gradient(900px 460px at 72% 140px, rgba(14,118,255,.42), transparent 70%),
+    radial-gradient(700px 380px at 10% 40px, rgba(40,80,170,.35), transparent 70%),
+    linear-gradient(180deg, #08142b 0, var(--sh-deep) 200px, #12306a 360px, #0a1430 560px, var(--sh-night) 760px) !important;
+  background-repeat:no-repeat !important; background-color:var(--sh-night) !important;
+  color:var(--sh-text) !important;
+}
+html body::before{display:none !important}          /* old faint ETH mark */
+
+/* ---------- page header (derivatives / liquidity / overview title) ---------- */
+body main>h1.page-head, body .wrap>header h1, body .wrap>header.top h1{
+  font-family:var(--sh-head) !important; font-weight:500 !important; color:#fff !important;
+  font-size:clamp(36px,4.6vw,60px) !important; line-height:1.02 !important; letter-spacing:-.035em !important;
+  margin:24px 0 14px !important;
+}
+body .site-kicker, body .wrap>header h1>small, body .wrap>header .kicker{
+  display:flex !important; width:fit-content; align-items:center; gap:8px; margin:0 0 14px !important;
+  font:600 11.5px/1 var(--sh-head) !important; letter-spacing:.16em !important; text-transform:uppercase;
+  color:rgba(255,255,255,.62) !important;
+}
+body .site-kicker::before, body .wrap>header h1>small::before, body .wrap>header .kicker::before{
+  content:""; width:7px; height:7px; background:var(--sh-blue); flex:none;
+}
+body main>h1.page-head+p, body main>h1.page-head+p small, body .wrap>header .bar, body .wrap>header .st{color:rgba(255,255,255,.66) !important}
+body main>h1.page-head+p button, body .wrap>header button{
+  background:#fff !important; color:#05070c !important; border:0 !important;
+  font:600 11.5px/1 var(--sh-head) !important; letter-spacing:.12em !important; text-transform:uppercase; padding:11px 16px !important;
+}
+body main>h1.page-head+p button:hover, body .wrap>header button:hover{background:var(--sh-blue) !important;color:#fff !important}
+body .wrap>header{border:0 !important; background:transparent !important}
+
+/* ---------- fixed top bar: brand left, square menu right ---------- */
+body.has-bar{padding-top:64px !important}
+.site-bar{position:fixed;top:0;left:0;right:0;z-index:120;height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:0 max(22px,env(safe-area-inset-right,0px)) 0 max(22px,env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg,rgba(5,7,12,.85),rgba(5,7,12,0));transition:background .25s}
+.site-bar.scrolled{background:rgba(5,7,12,.86);border-bottom:1px solid var(--sh-line)}
+.bar-brand{display:flex;align-items:center;gap:10px;color:#fff !important;text-decoration:none !important;font:500 20px/1 var(--sh-head);letter-spacing:-.02em;white-space:nowrap}
+.bar-brand svg{width:16px;height:24px}
+.bar-brand svg path{fill:#fff}
+.bar-menu{display:flex;gap:3px}
+.bar-menu a{display:flex;align-items:center;gap:8px;height:34px;padding:0 15px;background:rgba(22,28,40,.92);color:#fff !important;text-decoration:none !important;
+  font:600 12.5px/1 var(--sh-head),"Noto Sans KR",sans-serif;letter-spacing:.06em;white-space:nowrap;transition:background .15s}
+.bar-menu a:hover{background:rgba(44,54,74,.95)}
+.bar-menu a[aria-current="page"]::before{content:"";width:6px;height:6px;background:var(--sh-blue)}
+.bar-menu a:focus-visible,.bar-brand:focus-visible{outline:2px solid var(--sh-blue);outline-offset:2px}
+
+/* ---------- desktop sidebar: black index panel under the bar ---------- */
+@media(min-width:1100px){
+  body .site-side, body #desktopSidebar{background:var(--sh-night) !important; border-right:1px solid var(--sh-line) !important; top:64px !important; padding-top:18px !important}
+  body .site-side .side-brand{display:none !important}
+  body .site-side .side-page, body .site-side .side-group{color:rgba(255,255,255,.4) !important; text-transform:uppercase; letter-spacing:.14em !important; font-size:10.5px !important}
+  body .site-side a{color:rgba(255,255,255,.66) !important;border-radius:0 !important}
+  body .site-side a:hover, body .site-side a:focus-visible{background:rgba(255,255,255,.05) !important; color:#fff !important}
+  body .site-side a.active{background:rgba(14,118,255,.16) !important; color:#fff !important; box-shadow:inset 2px 0 0 var(--sh-blue) !important}
+  body .site-side .side-footer a{border:1px solid var(--sh-line2) !important}
+}
+
+/* ---------- cards: dark glass, square, hairline ---------- */
+body section, body main>nav, body .card, body .feature-nav{
+  background:var(--sh-card) !important; border:1px solid var(--sh-line) !important;
+   
+  border-radius:0 !important; box-shadow:none !important; color:var(--sh-text);
+}
+body section section{background:transparent !important; -webkit-backdrop-filter:none; backdrop-filter:none}
+body .feature-item{background:var(--sh-card2) !important;border:1px solid var(--sh-line) !important;border-radius:0 !important}
+body h1, body h2, body h3{font-family:var(--sh-head) !important; letter-spacing:-.02em !important; color:#fff !important}
+body section h2, body .wrap section h2{font-size:22px !important; font-weight:500 !important; display:flex; align-items:center; gap:10px}
+body section h2::before, body .wrap section h2::before{content:""; width:7px; height:7px; background:var(--sh-blue); flex:none}
+body main>div>h2, body .wrap>h2{font-weight:500 !important}
+
+/* ---------- key-figure tiles ---------- */
+body #summaryCards{background:transparent !important; border:0 !important; -webkit-backdrop-filter:none; backdrop-filter:none; padding:0 !important}
+body #summaryCards>div{
+  background:var(--sh-card) !important; border:1px solid var(--sh-line) !important; border-radius:0 !important;
+  padding:18px 20px 20px !important;  
+}
+body #summaryCards small{
+  display:inline-block; background:#fff; color:#05070c !important; padding:5px 8px 4px; margin-bottom:12px;
+  font:600 10.5px/1 var(--sh-head) !important; letter-spacing:.12em !important; text-transform:uppercase;
+}
+body .value{font-family:var(--sh-head) !important; font-weight:500 !important; letter-spacing:-.03em !important}
+body #summaryCards .value{font-size:clamp(26px,2.6vw,36px) !important; line-height:1.08; color:#fff !important}
+
+/* ---------- buttons & range pickers ---------- */
+body button, body select, body input{
+  border-radius:0 !important; border:1px solid var(--sh-line2) !important; background:transparent !important; color:var(--sh-text) !important;
+  font-family:var(--sh-head),"Noto Sans KR",sans-serif !important; font-weight:600 !important; letter-spacing:.04em;
+}
+body button:hover{border-color:#fff !important; color:#fff !important}
+body button.on, body button.active, body button[aria-pressed="true"], body button[aria-selected="true"]{
+  background:#fff !important; border-color:#fff !important; color:#05070c !important;
+}
+body .to-top{background:#fff !important; color:#05070c !important; border:0 !important; border-radius:0 !important; box-shadow:none !important}
+body .to-top:hover{background:var(--sh-blue) !important; color:#fff !important; transform:none}
+
+/* ---------- tables, links, chart tooltip ---------- */
+body td, body th{border-bottom:1px solid var(--sh-line) !important}
+body th{font-family:var(--sh-head) !important; text-transform:uppercase; letter-spacing:.1em; font-size:11px !important; color:var(--sh-soft) !important}
+body a{color:var(--sh-blue2)}
+body .eth-track-tip{background:rgba(5,7,12,.96) !important; border:1px solid var(--sh-line2) !important; border-radius:0 !important}
+body .tradingview-widget-container{border-radius:0 !important}
+
+/* ---------- start-page hero ---------- */
+body main>section.eth-hero{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:24px;
+  min-height:min(640px,calc(100vh - 64px));margin:0 0 28px;padding:20px 0 40px;
+  background:transparent !important;border:0 !important;-webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.eth-hero h2::before{display:none !important}
+body main>section.eth-hero{position:relative;isolation:isolate}
+.eth-hero>*{position:relative;z-index:1}
+.eth-hero>.hero-waves{position:absolute;z-index:0;inset:-64px 0 -40px 0;width:100%;height:calc(100% + 104px);pointer-events:none;
+  /* the radial fade is drawn in hero.js; this only guards the very edges of the canvas */
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 6%,#000 90%,transparent 100%);
+          mask-image:linear-gradient(180deg,transparent 0,#000 6%,#000 90%,transparent 100%)}
+body .eth-hero .hero-title{font:500 clamp(48px,5.6vw,92px)/.98 var(--sh-head) !important;letter-spacing:-.045em !important;color:#fff !important;margin:0 0 26px;display:block !important}
+.eth-hero .hero-sub{color:rgba(255,255,255,.84) !important;font-size:16.5px;line-height:1.55;margin:0 0 26px;font-weight:500}
+.hero-cta{display:inline-flex;align-items:stretch;gap:2px;text-decoration:none !important}
+.hero-cta span,.hero-cta i{display:flex;align-items:center;background:rgba(30,44,70,.85);color:#fff;font:600 12.5px/1 var(--sh-head),"Noto Sans KR",sans-serif;letter-spacing:.08em}
+.hero-cta span{padding:0 16px;height:38px}
+.hero-cta i{width:38px;justify-content:center}
+.hero-cta:hover span,.hero-cta:hover i{background:var(--sh-blue)}
+.hero-token{position:relative;height:min(560px,62vh);min-height:340px;cursor:grab}
+.hero-token canvas{position:absolute;inset:0;width:100% !important;height:100% !important;display:block}
+.hero-fallback{position:absolute;left:50%;top:50%;height:58%;transform:translate(-50%,-50%);opacity:.9}
+
+.hero-events{align-self:center;color:#fff}
+.ev-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font:500 17px/1 var(--sh-head)}
+.ev-count{font:600 11px/1 var(--sh-head);letter-spacing:.14em;color:rgba(255,255,255,.6)}
+.ev-progress{height:3px;background:rgba(255,255,255,.12)}
+.ev-progress i{display:block;height:100%;width:0;background:var(--sh-blue);transition:width .3s}
+.ev-row{display:grid;grid-template-columns:1fr 44px;gap:2px}
+.ev-card{position:relative;min-height:132px;padding:18px 54px 18px 20px;background:rgba(40,62,110,.5);}
+.ev-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;font:600 11px/1 var(--sh-head),"Noto Sans KR",sans-serif;letter-spacing:.12em;color:rgba(255,255,255,.7)}
+.ev-dday{color:#fff;background:var(--sh-blue);padding:4px 6px 3px;letter-spacing:.06em}
+.ev-title{font:600 17px/1.35 "Noto Sans KR",sans-serif;color:#fff;margin-bottom:8px}
+.ev-when{font-size:12.5px;color:rgba(255,255,255,.72)}
+.ev-link{position:absolute;right:14px;bottom:14px;width:30px;height:30px;display:grid;place-items:center;background:rgba(255,255,255,.14);color:#fff !important}
+.ev-link:hover{background:var(--sh-blue)}
+.ev-empty{margin:0;color:rgba(255,255,255,.7)}
+.ev-nav{display:grid;grid-template-rows:1fr 1fr;gap:2px}
+body .ev-nav button{background:rgba(40,62,110,.5) !important;border:0 !important;color:#fff !important;display:grid;place-items:center;padding:0 !important}
+body .ev-nav button:hover{background:var(--sh-blue) !important;color:#fff !important}
+body:has(.eth-hero) main>h1.page-head{font-size:clamp(30px,3vw,44px) !important;margin:8px 0 10px !important}
+
+/* mid widths (small laptop / tablet): title + events on the left, logo on the right */
+@media(min-width:761px) and (max-width:1180px){
+  body main>section.eth-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"copy token" "events token";row-gap:28px}
+  .eth-hero .hero-copy{grid-area:copy;align-self:end}
+  .eth-hero .hero-token{grid-area:token;height:min(520px,60vh)}
+  .eth-hero .hero-events{grid-area:events;align-self:start}
+  body .eth-hero .hero-title{font-size:clamp(44px,5.4vw,64px) !important}
+}
+/* phones: stacked in the same order as desktop (title, logo, events) */
+@media(max-width:760px){
+  body main>section.eth-hero{grid-template-columns:1fr;gap:8px;min-height:0;padding-top:28px}
+}
+
+/* ---------- phones ---------- */
+@media (max-width:760px){
+  body.has-bar{padding-top:96px !important}
+  .site-bar{height:96px;flex-direction:column;align-items:stretch;justify-content:center;gap:10px;padding-top:6px;background:rgba(5,7,12,.92)}
+  .bar-brand{font-size:18px}
+  .bar-menu{overflow-x:auto;scrollbar-width:none}
+  .bar-menu a{flex:1;justify-content:center;padding:0 10px;font-size:12px}
+  .hero-token{height:300px}
+  body .eth-hero .hero-title{font-size:52px !important}
+  body main>h1.page-head, body .wrap>header h1, body .wrap>header.top h1{font-size:40px !important; margin:16px 0 10px !important}
+}
+
+/* performance: no backdrop blur anywhere (it was re-computed every frame behind the 3D logo) */
+*,*::before,*::after{-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+.site-bar.scrolled{background:rgba(5,7,12,.94)}

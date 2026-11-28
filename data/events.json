@@ -1,0 +1,40 @@
+{
+  "note": "Upcoming events for the start page. Times are KST (UTC+9). Past events are hidden automatically. Add or edit entries here.",
+  "events": [
+    {
+      "at": "2026-12-10T04:00:00+09:00",
+      "tag": "FOMC",
+      "title": "12월 FOMC 금리 결정 · 파월 기자회견",
+      "note": "12월 8~9일 회의, 점도표 발표",
+      "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    },
+    {
+      "at": "2026-12-10T22:30:00+09:00",
+      "tag": "CPI",
+      "title": "미국 11월 소비자물가지수(CPI)",
+      "note": "BLS 발표",
+      "url": "https://www.bls.gov/schedule/news_release/cpi.htm"
+    },
+    {
+      "at": "2026-12-25T17:00:00+09:00",
+      "tag": "옵션 만기",
+      "title": "Deribit 분기 옵션 만기 (ETH·BTC)",
+      "note": "12월 마지막 금요일 08:00 UTC",
+      "url": "https://www.deribit.com/"
+    },
+    {
+      "at": "2027-01-08T22:30:00+09:00",
+      "tag": "고용",
+      "title": "미국 12월 고용보고서",
+      "note": "BLS Employment Situation",
+      "url": "https://www.bls.gov/schedule/2027/home.htm"
+    },
+    {
+      "at": "2027-01-13T22:30:00+09:00",
+      "tag": "CPI",
+      "title": "미국 12월 소비자물가지수(CPI)",
+      "note": "BLS 발표",
+      "url": "https://www.bls.gov/schedule/news_release/cpi.htm"
+    }
+  ]
+}

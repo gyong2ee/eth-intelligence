@@ -2,7 +2,7 @@
 // each for BTC and ETH, from /api/bybit.
 (function(){
  var NS='http://www.w3.org/2000/svg',DAY=864e5;
- var FONT='Inter, "Noto Sans KR", system-ui, sans-serif';
+ var FONT='Archivo, "Noto Sans KR", system-ui, sans-serif';
  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}
  function txt(x,y,s,a){var t=el('text',Object.assign({x:x,y:y,fill:'var(--muted)','font-size':11,'font-family':FONT},a||{}));t.textContent=s;return t}
  function niceStep(r){var p=Math.pow(10,Math.floor(Math.log10(r))),n=r/p;return (n<1.5?1:n<3?2:n<7?5:10)*p}

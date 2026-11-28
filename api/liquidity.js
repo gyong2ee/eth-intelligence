@@ -31,6 +31,35 @@ async function fred(id,scale){
  throw Error(errors.join('; '));
 }
 
+// FRED (fred.stlouisfed.org) does not answer requests from the Seoul region these functions run
+// in, and DBnomics dropped its FRED mirror (404). So both series use official primary sources first:
+
+// Fed total assets = H.4.1 "Total assets (less eliminations from consolidation)", Wednesday level,
+// the same series FRED publishes as WALCL. Via DBnomics' Federal Reserve dataset (millions -> billions).
+async function walclH41(){
+ const j=JSON.parse(await fetchText('https://api.db.nomics.world/v22/series/FED/H41/RESPPMA_N.WW?observations=1',15000));
+ const doc=j?.series?.docs?.[0],p=doc?.period||[],v=doc?.value||[],start=since();
+ const rows=clean(p.map((d,i)=>({date:String(d),value:Number(v[i])/1000}))).filter(r=>r.date>=start);
+ if(rows.length<10)throw Error('H.4.1 returned '+rows.length+' rows');
+ return {rows,source:'Federal Reserve H.4.1 (RESPPMA_N.WW) via DBnomics'};
+}
+
+// Overnight reverse repo = NY Fed ON RRP operations, total accepted per day (dollars -> billions).
+async function rrpNYFed(){
+ const end=new Date().toISOString().slice(0,10);
+ const j=JSON.parse(await fetchText('https://markets.newyorkfed.org/api/rp/reverserepo/propositions/search.json?startDate='+since()+'&endDate='+end,15000));
+ const byDay=new Map();
+ for(const op of j?.repo?.operations||[]){
+  if(!/reverse repo/i.test(op.operationType||''))continue;
+  const v=Number(op.totalAmtAccepted);if(!Number.isFinite(v))continue;
+  byDay.set(op.operationDate,(byDay.get(op.operationDate)||0)+v/1e9);
+ }
+ const rows=clean([...byDay].map(([date,value])=>({date,value})));
+ if(rows.length<10)throw Error('NY Fed returned '+rows.length+' rows');
+ return {rows,source:'Federal Reserve Bank of New York ON RRP'};
+}
+const orFred=(primary,id,scale)=>primary().catch(async e=>{try{return await fred(id,scale)}catch(e2){throw Error(e.message+'; '+e2.message)}});
+
 // Daily TGA closing balance from the Treasury's Daily Treasury Statement (millions -> billions).
 async function tgaDaily(){
  const start=since();let rows=[],page=1;
@@ -67,7 +96,7 @@ function netLiquidity(walcl,tga,rrp){
 }
 
 module.exports=async function(req,res){
- const jobs={walcl:fred('WALCL',1/1000),rrp:fred('RRPONTSYD',1),tga:tgaDaily().catch(async e=>{try{return await fred('WTREGEN',1)}catch(e2){throw Error(e.message+'; '+e2.message)}}),stablecoins:stablecoins()};
+ const jobs={walcl:orFred(walclH41,'WALCL',1/1000),rrp:orFred(rrpNYFed,'RRPONTSYD',1),tga:tgaDaily().catch(async e=>{try{return await fred('WTREGEN',1)}catch(e2){throw Error(e.message+'; '+e2.message)}}),stablecoins:stablecoins()};
  const keys=Object.keys(jobs),settled=await Promise.allSettled(Object.values(jobs)),out={unit:'USD billions',errors:{},sources:{}};
  settled.forEach((s,i)=>{const k=keys[i];if(s.status==='fulfilled'){out[k]=s.value.rows;out.sources[k]=s.value.source}else{out[k]=[];out.errors[k]=s.reason.message}});
  out.net=out.walcl.length&&out.tga.length&&out.rrp.length?netLiquidity(out.walcl,out.tga,out.rrp):[];

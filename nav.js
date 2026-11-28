@@ -14,13 +14,18 @@
  var path=location.pathname.replace(/\/+$/,'')||'/';
  var page=PAGES.filter(function(p){return p.paths.indexOf(path)>=0})[0]||PAGES[0];
 
+ // Fixed top bar on every page: ETH mark + "ETH Intelligence" on the left, page menu on the right
+ // (square dark buttons; the current page gets a blue square). Styles live in sharp.css.
  function tabs(){
-  var host=document.querySelector('body>main')||document.querySelector('.wrap')||document.querySelector('main');if(!host||document.querySelector('.site-tabs'))return;
-  var nav=document.createElement('nav');nav.className='site-tabs';nav.setAttribute('aria-label','페이지');
+  if(document.querySelector('.site-bar'))return;
+  var bar=document.createElement('header');bar.className='site-bar';
+  var brand=document.createElement('a');brand.className='bar-brand';brand.href='/';brand.innerHTML=ETH;
+  var bn=document.createElement('span');bn.textContent='ETH Intelligence';brand.appendChild(bn);
+  var nav=document.createElement('nav');nav.className='bar-menu';nav.setAttribute('aria-label','페이지');
   PAGES.forEach(function(p){var a=document.createElement('a');a.href=p.href;a.textContent=p.label;if(p===page)a.setAttribute('aria-current','page');nav.appendChild(a)});
-  host.insertBefore(nav,host.firstChild);
-  // keeps the page from jumping under the fixed tab bar on phones (hidden on desktop)
-  var sp=document.createElement('div');sp.className='site-tabs-spacer';sp.setAttribute('aria-hidden','true');nav.after(sp);
+  bar.appendChild(brand);bar.appendChild(nav);
+  document.body.insertBefore(bar,document.body.firstChild);document.body.classList.add('has-bar');
+  var tick=function(){bar.classList.toggle('scrolled',window.scrollY>40)};window.addEventListener('scroll',tick,{passive:true});tick();
  }
  function side(){
   var existing=document.getElementById('desktopSidebar');
@@ -78,7 +83,7 @@ window.ETHTrack=(function(){
   if(svg._ethTrackOff)svg._ethTrackOff();
   var host=o.host||svg.parentElement,tt=tip(host),dots=o.dots!==false;
   var cross=document.createElementNS(NS,'line');cross.setAttribute('y1',o.top);cross.setAttribute('y2',o.bottom);cross.setAttribute('stroke','currentColor');cross.setAttribute('stroke-opacity','.45');cross.setAttribute('stroke-dasharray','3 3');cross.setAttribute('visibility','hidden');cross.setAttribute('pointer-events','none');svg.appendChild(cross);
-  var marks=o.series.map(function(s){var c=document.createElementNS(NS,'circle');c.setAttribute('r',4);c.setAttribute('fill',s.color);c.setAttribute('stroke','#0a1220');c.setAttribute('stroke-width',1.5);c.setAttribute('visibility','hidden');c.setAttribute('pointer-events','none');svg.appendChild(c);return c});
+  var marks=o.series.map(function(s){var c=document.createElementNS(NS,'circle');c.setAttribute('r',4);c.setAttribute('fill',s.color);c.setAttribute('stroke','#05070c');c.setAttribute('stroke-width',1.5);c.setAttribute('visibility','hidden');c.setAttribute('pointer-events','none');svg.appendChild(c);return c});
   function move(e){
    var r=svg.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*o.W;
    if(sx<o.left||sx>o.right){leave();return}

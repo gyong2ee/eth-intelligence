@@ -4,8 +4,8 @@
 // wheel over the chart or the navigator to zoom around the pointer.
 (function(){
  var DAY=864e5,NS='http://www.w3.org/2000/svg';
- var FONT='Inter, "Noto Sans KR", system-ui, sans-serif';
- var C={grid:'#1d2a40',text:'#98a4b8',dim:'#6c7a90',ink:'#0a1220',sel:'rgba(201,164,92,.16)',edge:'#c9a45c',navFill:'rgba(152,164,184,.22)',navLine:'#6c7a90'};
+ var FONT='Archivo, "Noto Sans KR", system-ui, sans-serif';
+ var C={grid:'#1c2330',text:'#8d96a6',dim:'#687183',ink:'#05070c',sel:'rgba(61,139,255,.16)',edge:'#3d8bff',navFill:'rgba(152,164,184,.22)',navLine:'#687183'};
  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}
  function niceStep(r){var p=Math.pow(10,Math.floor(Math.log10(r))),n=r/p;return (n<1.5?1:n<3?2:n<7?5:10)*p}
  function ym(t){var d=new Date(t);return d.getUTCFullYear()+'.'+String(d.getUTCMonth()+1).padStart(2,'0')}
@@ -159,7 +159,7 @@
   if(!document.getElementById('m2Chart'))return;
   var m2=new Chart({box:'m2Chart',tip:'m2tip',rangeKey:'m2x',label:'M2 통화량',name:'M2',color:'#6fbfa8',minSpanDays:180,
    fmtAxis:function(v){return v.toFixed(1)+'조'},fmtTip:function(v){return v.toFixed(2)+'조 달러'}});
-  var yoy=new Chart({box:'yoyChart',tip:'yoytip',rangeKey:'yoyx',label:'M2 전년 대비 증가율',name:'YoY',color:'#c9a45c',zero:true,minSpanDays:180,
+  var yoy=new Chart({box:'yoyChart',tip:'yoytip',rangeKey:'yoyx',label:'M2 전년 대비 증가율',name:'YoY',color:'#3d8bff',zero:true,minSpanDays:180,
    fmtAxis:function(v){return v.toFixed(0)+'%'},fmtTip:function(v){return (v>=0?'+':'')+v.toFixed(2)+'%'}});
   [['m2x',m2],['yoyx',yoy]].forEach(function(pair){
    document.querySelectorAll('.macroRanges[data-chart="'+pair[0]+'"] button').forEach(function(b){b.addEventListener('click',function(){if(pair[1].pts.length)pair[1].setDays(+b.dataset.days)})});

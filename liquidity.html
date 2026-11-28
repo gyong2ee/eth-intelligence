@@ -7,23 +7,23 @@
 @media(max-width:760px){.row2{grid-template-columns:1fr}}
 .apy-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:10px;overflow-x:auto;padding-bottom:4px}
 .apy .amt{font-size:12.5px;color:var(--text);font-family:var(--num)}
-.apy{border:1px solid var(--rule);border-radius:14px;padding:12px 14px;display:grid;gap:2px}
+.apy{border:1px solid var(--rule);border-radius:0;padding:12px 14px;display:grid;gap:2px}
 .apy .v{font-family:var(--num);font-weight:600;font-size:24px;letter-spacing:-.02em}
 .apy .k{font-size:13px;font-weight:600}
 .apy .s{font-size:12px;color:var(--soft)}
 </style><link rel="stylesheet" href="/nav.css"><script src="/nav.js" defer></script><title>글로벌 유동성</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Inter:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@500;600;700&display=swap">
 <style>
 /* Layout: plain header, the verdict (flood / slack / ebb), eight indicator cards, one tabbed chart, five supporting charts, sources. Minimal, rounded, navy ink with a faint ETH mark behind. Deliberately single dark theme. */
 :root{
-  --ink:#0a1220; --paper:#0f1a2b; --paper2:#13213a; --rule:#22324d; --rule2:#2d4163;
-  --text:#ece6d6; --soft:#98a4b8; --dim:#6c7a90;
-  --note:#6fbfa8; --note-deep:#2f6f61; --brass:#c9a45c; --brass-dim:#8a7140;
-  --flood:#6fbfa8; --ebb:#e2735c; --slack:#98a4b8;
+  --ink:#05070c; --paper:#0b0f17; --paper2:#111723; --rule:#1c2330; --rule2:#2a3344;
+  --text:#eef1f6; --soft:#8d96a6; --dim:#687183;
+  --note:#6fbfa8; --note-deep:#2f6f61; --brass:#3d8bff; --brass-dim:#1d4f9e;
+  --flood:#6fbfa8; --ebb:#e2735c; --slack:#8d96a6;
   --serif:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --num:"Inter","Noto Sans KR",system-ui,sans-serif;
+  --num:"Archivo","Noto Sans KR",system-ui,sans-serif;
   --sans:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   color-scheme:dark;
 }
@@ -105,33 +105,33 @@ svg.c text{font-family:var(--sans);font-size:11px;fill:var(--dim)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* minimal pass: rounded, quiet, faint ETH mark behind everything */
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2036%22%3E%3Cpath%20d%3D%22M12%201L1%2018l11-5.2L23%2018%2012%201Z%22%20fill%3D%22%23ece6d6%22/%3E%3Cpath%20d%3D%22M1%2020.5%2012%2035l11-14.5-11%206.3L1%2020.5Z%22%20fill%3D%22%23ece6d6%22/%3E%3Cpath%20d%3D%22M1%2018%2012%2012.8V25L1%2018Z%22%20fill%3D%22%23ece6d6%22%20fill-opacity%3D%22.7%22/%3E%3Cpath%20d%3D%22M23%2018%2012%2012.8V25l11-7Z%22%20fill%3D%22%23ece6d6%22%20fill-opacity%3D%22.45%22/%3E%3C/svg%3E") center 42%/min(46vw,420px) no-repeat;opacity:.035}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2036%22%3E%3Cpath%20d%3D%22M12%201L1%2018l11-5.2L23%2018%2012%201Z%22%20fill%3D%22%23eef1f6%22/%3E%3Cpath%20d%3D%22M1%2020.5%2012%2035l11-14.5-11%206.3L1%2020.5Z%22%20fill%3D%22%23eef1f6%22/%3E%3Cpath%20d%3D%22M1%2018%2012%2012.8V25L1%2018Z%22%20fill%3D%22%23eef1f6%22%20fill-opacity%3D%22.7%22/%3E%3Cpath%20d%3D%22M23%2018%2012%2012.8V25l11-7Z%22%20fill%3D%22%23eef1f6%22%20fill-opacity%3D%22.45%22/%3E%3C/svg%3E") center 42%/min(46vw,420px) no-repeat;opacity:.035}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding-bottom:6px}
 .top h1{margin:2px 0 0;font-size:clamp(24px,3.4vw,32px);font-weight:700;letter-spacing:-.03em}
 .kicker{font-size:13px;color:var(--soft)}
 .top .st{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--soft)}
-.station{grid-template-columns:1fr;border-radius:18px;border-color:var(--rule)}
+.station{grid-template-columns:1fr;border-radius:0;border-color:var(--rule)}
 .verdict-box{border-right:0!important;border-bottom:0!important}
 .verdict{font-weight:700;letter-spacing:-.04em}
 .log{border:0;gap:12px;grid-auto-rows:auto}
-.inst{border:1px solid var(--rule)!important;border-radius:16px;background:rgba(15,26,43,.82)}
-.panel{border-radius:18px;border-color:var(--rule);background:rgba(15,26,43,.82)}
-.station{background:rgba(15,26,43,.82)}
-button{border-radius:999px}
-.tabs{gap:4px;background:var(--paper2);padding:3px;border-radius:999px}
-.tabs button{border:0;margin:0;border-radius:999px;padding:5px 12px}
+.inst{border:1px solid var(--rule)!important;border-radius:0;background:rgba(11,15,23,.82)}
+.panel{border-radius:0;border-color:var(--rule);background:rgba(11,15,23,.82)}
+.station{background:rgba(11,15,23,.82)}
+button{border-radius:0}
+.tabs{gap:4px;background:var(--paper2);padding:3px;border-radius:0}
+.tabs button{border:0;margin:0;border-radius:0;padding:5px 12px}
 .tabs button[aria-pressed="true"]{background:var(--text);color:var(--ink)}
-.chip{border-radius:999px;border:0;background:color-mix(in srgb,currentColor 14%,transparent)}
+.chip{border-radius:0;border:0;background:color-mix(in srgb,currentColor 14%,transparent)}
 .sec-head{border-bottom:0;padding-bottom:0}
-.banner{border-radius:12px}
-.tip{border-radius:8px}
+.banner{border-radius:0}
+.tip{border-radius:0}
 .colophon{border-top:1px solid var(--rule);grid-template-columns:1fr}
 .code{color:var(--soft)}
 
 /* Phone only (≤760px): eight indicator cards as 2 across × 4 rows. Desktop untouched. */
 @media (max-width:760px){
  .log{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
- .inst{padding:12px 11px 10px!important;border-radius:14px!important;gap:3px!important}
+ .inst{padding:12px 11px 10px!important;border-radius:0!important;gap:3px!important}
  .inst h3{font-size:12.5px}
  .inst .val{font-size:21px}
  .inst .chg{font-size:11.5px}
@@ -443,3 +443,4 @@ load();
 })();
 </script>
 </html>
+<link rel="stylesheet" href="/sharp.css">
