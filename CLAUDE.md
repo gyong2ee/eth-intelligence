@@ -68,3 +68,9 @@ regions, so keep that setting.
   Bybit/Binance public endpoints for derivatives. Show real values only, no estimates of
   delayed data (e.g. MVRV from Coin Metrics lags 1–2 days; that is expected).
 - `CMC_API_KEY` is set for Production and Preview in Vercel.
+- FRED: the website (fred.stlouisfed.org, incl. fredgraph.csv) does not answer from the Seoul
+  region; the API (api.stlouisfed.org) does. Fetch FRED only through `fredFetch()` in
+  `api/_fred.js`: with `FRED_API_KEY` set in Vercel it serves fredgraph.csv URLs from the API in
+  the same CSV shape; without the key it falls through to plain fetch. Primary sources stay first
+  where FRED is not needed: ON RRP and EFFR from the NY Fed APIs, Fed total assets from H.4.1
+  (RESPPMA_N.WW via DBnomics, ~2-3 weeks behind) unless the key is set, then FRED WALCL first.

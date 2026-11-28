@@ -1,11 +1,12 @@
 // Liquidity series: Fed balance sheet (WALCL), Treasury General Account (TGA),
 // overnight reverse repo (RRP), Fed net liquidity, and total stablecoin supply.
 // All values are returned in USD billions. Each series fails independently.
+const {fredFetch,fredKey}=require('./_fred');
 const UA={'User-Agent':'ETHIntelligence/1.0',Accept:'application/json,text/csv'};
 const YEARS=Math.max(1,Math.min(20,5));
 
 async function fetchText(url,ms=12000){
- const r=await fetch(url,{headers:UA,signal:AbortSignal.timeout(ms)});
+ const r=await fredFetch(url,{headers:UA,signal:AbortSignal.timeout(ms)});   // FRED API when FRED_API_KEY is set
  if(!r.ok)throw Error('HTTP '+r.status);
  return r.text();
 }
@@ -96,7 +97,7 @@ function netLiquidity(walcl,tga,rrp){
 }
 
 module.exports=async function(req,res){
- const jobs={walcl:orFred(walclH41,'WALCL',1/1000),rrp:orFred(rrpNYFed,'RRPONTSYD',1),tga:tgaDaily().catch(async e=>{try{return await fred('WTREGEN',1)}catch(e2){throw Error(e.message+'; '+e2.message)}}),stablecoins:stablecoins()};
+ const jobs={walcl:fredKey()?fred('WALCL',1/1000).catch(()=>walclH41()):orFred(walclH41,'WALCL',1/1000),rrp:orFred(rrpNYFed,'RRPONTSYD',1),tga:tgaDaily().catch(async e=>{try{return await fred('WTREGEN',1)}catch(e2){throw Error(e.message+'; '+e2.message)}}),stablecoins:stablecoins()};
  const keys=Object.keys(jobs),settled=await Promise.allSettled(Object.values(jobs)),out={unit:'USD billions',errors:{},sources:{}};
  settled.forEach((s,i)=>{const k=keys[i];if(s.status==='fulfilled'){out[k]=s.value.rows;out.sources[k]=s.value.source}else{out[k]=[];out.errors[k]=s.reason.message}});
  out.net=out.walcl.length&&out.tga.length&&out.rrp.length?netLiquidity(out.walcl,out.tga,out.rrp):[];
